@@ -26,4 +26,13 @@ Function GetFiles
         }  
     }  
 }  
-GetFiles   
+GetFiles
+
+
+# Copy Data from one fileshare to another fileshare
+https://docs.microsoft.com/en-us/powershell/module/az.storage/get-azstoragefile?view=azps-5.9.0
+https://docs.microsoft.com/en-us/powershell/module/az.storage/Start-AzStorageFileCopy?view=azps-5.9.0
+
+$srctx  = (Get-AzStorageAccount -ResourceGroupName "teststrcp" -Name "teststrcp1").Context
+$desctx = (Get-AzStorageAccount -ResourceGroupName "teststrcp" -Name "teststrcp2").Context
+Start-AzStorageFileCopy -SrcShareName "firststrfirstshare" -SrcFilePath test1.txt -DestShareName "secondstrfirstshare" -DestFilePath "test1.txt" -Context $srctx -DestContext $desctx
