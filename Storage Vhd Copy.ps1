@@ -4,10 +4,10 @@ We used this to copy our MSIX appa attach VHDX from one fileshare another for BC
 Author: -  Gourav Kumar
 Reach Me: - gouravin@outlook.com
 LinkedIN: - https://www.linkedin.com/in/gouravrathore/
-Version: - 1.0.0.1
+Version: - 1.0.0.2
 #>
 
-$date     = Get-Date                   # Getting present date along with time to compare
+$date     = (Get-Date).AddDays(-1)     # Getting yesterday to compare and only copying files thats was modifed within 24 hours
 $srcstr   = "teststrcp1"               # Source storage account name, where already files are there
 $srcstrrg = "teststrcp"                # Source storage account resourcegroup name
 $srcfs    = "firststrfirstshare"       # Source FileShare name, where already files are there
@@ -31,7 +31,7 @@ foreach ($dir in $fsitems) {
     $moddate  = $dir.FileProperties.LastModified.DateTime
 
 # if last modified date is less then today then paste this item to destination storage account else do nothing as it is already up to date
-     if ($moddate -le $date) {
+     if ($moddate -ge $date) {
          Write-Output "Copying $filename from source storage account $srcstr to destination storage account $desstr"
         Start-AzStorageFileCopy -SrcShareName $srcfs -SrcFilePath $dir.Name -DestShareName $desfs -DestFilePath $dir.Name -Context $srcstrctx -DestContext $desstrct -Force
      } else {
