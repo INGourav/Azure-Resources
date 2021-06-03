@@ -39,13 +39,13 @@ foreach ($dir in $fsitems) {
         if ($dfilename -eq $filename) {
             Write-Output "The $filename is avilable in $desstr account account"
             } else {
-                Start-AzStorageFileCopy -SrcShareName $srcfs -SrcFilePath $dir.Name -DestShareName $desfs -DestFilePath $dir.Name -Context $srcstrctx -DestContext $desstrctx -Force   
+                Start-AzStorageFileCopy -SrcShareName $srcfs -SrcFilePath $filename -DestShareName $desfs -DestFilePath $filename -Context $srcstrctx -DestContext $desstrctx -Force   
             }
     }
 # if last modified date is less then today then paste this item to destination storage account else do nothing as it is already up to date
      if ($moddate -ge $date) {
          Write-Output "Copying $filename from source storage account $srcstr to destination storage account $desstr"
-        Start-AzStorageFileCopy -SrcShareName $srcfs -SrcFilePath $dir.Name -DestShareName $desfs -DestFilePath $dir.Name -Context $srcstrctx -DestContext $desstrctx -Force
+        Start-AzStorageFileCopy -SrcShareName $srcfs -SrcFilePath $filename -DestShareName $desfs -DestFilePath $filename -Context $srcstrctx -DestContext $desstrctx -Force
      } else {
          Write-Output "$filename is Up to Date"
      }
