@@ -7,7 +7,7 @@
 #Login-AzureRmAccount
 
 # Prompting the user to select the subscription
-Get-AzureRmSubscription | Out-GridView -OutputMode Single -Title "Please select a subscription" | ForEach-Object {$SubscriptionName = $PSItem.Name}
+Get-AzureRmSubscription | Out-GridView -OutputMode Single -Title "Please select a subscription" | ForEach-Object {$_.SubscriptionName = $PSItem.Name}
 Write-Host "You have selected the subscription: $SubscriptionName. Proceeding with fetching the Azure User Role for it. `n" -ForegroundColor yellow
 
 # Setting the selected subscription

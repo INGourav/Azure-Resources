@@ -61,8 +61,8 @@ else {
 Write-Verbose "[BEGIN  ] Starting: $($MyInvocation.Mycommand)"
 Write-Verbose "[PROCESS] Searching $(Convert-Path -path $path) for Git repositories"
 
-dir -path $Path -Hidden -filter .git -Recurse | 
-select @{Name="Repository";Expression={Convert-Path $_.PSParentPath}},
+Get-ChildItem -path $Path -Hidden -filter .git -Recurse | 
+Select-Object @{Name="Repository";Expression={Convert-Path $_.PSParentPath}},
 @{Name ="Branch";Expression = {
  #save current location
  Push-Location
