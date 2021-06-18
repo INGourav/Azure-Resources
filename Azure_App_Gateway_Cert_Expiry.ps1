@@ -12,7 +12,7 @@ tr:nth-child(odd) { background: #b8d1f3; }
 "@
 
 
-$Report = @()
+#$Report = @()
 $Certdata = @()
 
 $subs= Get-AzureRmSubscription | Select-Object -ExpandProperty Name

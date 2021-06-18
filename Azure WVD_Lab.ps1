@@ -20,7 +20,7 @@ $DatabasePath = "G:\windows\NTDS"
 $DomainMode = "WinThreshold"
 #Change the Domain name and Domain Net BIOS Name to match your public domain name
 $DomainName = "drtestwvdcac.com"
-$DomaninNetBIOSName = "drtestwvdcac"
+#$DomaninNetBIOSName = "drtestwvdcac"
 $ForestMode = "WinThreshold"
 $LogPath = "G:\windows\NTDS"
 $SysVolPath = "G:\windows\SYSVOL"
@@ -83,9 +83,9 @@ New-ADUser -name $newUser -SamAccountName $newUser -UserPrincipalName $newUser@$
 $connectTestResult = Test-NetConnection -ComputerName drtestwvdcacstr.file.core.windows.net -Port 445
 if ($connectTestResult.TcpTestSucceeded) {
     # Save the password so the drive will persist on reboot
-    cmd.exe /C "cmdkey /add:`"drtestwvdcacstr.file.core.windows.net`" /user:`"Azure\drtestwvdcacstr`" /pass:`"icMoLN350xsUJUaPAjIiHHf0rFs2tATy96PmOA1XYANBLMfPxZvt+w0knQS1/S9cYKub4Jr5w896BilmjGVezQ==`""
+    cmd.exe /C "cmdkey /add:`"XXtestwvdXXXstr.file.core.windows.net`" /user:`"Azure\drtestwvdcacstr`" /pass:`"iXXXXXXXXXXXXXXXXXXXXXA1XYANBLMfPxZvXXXXXXXXXXXXw896XXXXXXXXXXVezQ==`""
     # Mount the drive
-    New-PSDrive -Name Z -PSProvider FileSystem -Root "\\drtestwvdcacstr.file.core.windows.net\drtestwvdcacsfs" -Persist
+    New-PSDrive -Name Z -PSProvider FileSystem -Root "\\XXtestwvdXXXstr.file.core.windows.net\XXtestwvdXXXsfs" -Persist
 } else {
     Write-Error -Message "Unable to reach the Azure storage account via port 445. Check to make sure your organization or ISP is not blocking port 445, or use Azure P2S VPN, Azure S2S VPN, or Express Route to tunnel SMB traffic over a different port."
 }

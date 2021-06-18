@@ -171,10 +171,10 @@ if ($mode -eq "ShowDemoJson")
 					}
 					try {
 						C:
-						cd \
+						Set-Location \
 						$linkPath=$msixJunction + $packageName
 						cmd.exe /c mklink /J "$linkPath" "$msixDest"
-						$asTask = ([System.WindowsRuntimeSystemExtensions].GetMethods() | Where { $_.ToString() -eq 'System.Threading.Tasks.Task`1[TResult] AsTask[TResult,TProgress](Windows.Foundation.IAsyncOperationWithProgress`2[TResult,TProgress])'})[0]
+						$asTask = ([System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object { $_.ToString() -eq 'System.Threading.Tasks.Task`1[TResult] AsTask[TResult,TProgress](Windows.Foundation.IAsyncOperationWithProgress`2[TResult,TProgress])'})[0]
 						$asTaskAsyncOperation = $asTask.MakeGenericMethod([Windows.Management.Deployment.DeploymentResult], [Windows.Management.Deployment.DeploymentProgress])
 						$packageManager = [Windows.Management.Deployment.PackageManager]::new()
 						$path = $msixJunction + $packageName + $parentFolder + $packageName

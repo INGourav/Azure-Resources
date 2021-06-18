@@ -34,7 +34,7 @@ foreach ($dir in $fsitems) {
     foreach ($ddir in $dfsitems) {
         $dfile     = Get-AZStorageFile -Context $desstrctx -ShareName $desfs -Path $ddir.Name
         $dfilename = $dfile.Name
-        $dmoddate  = $ddir.FileProperties.LastModified.DateTime
+        #$dmoddate  = $ddir.FileProperties.LastModified.DateTime
         
         if ($dfilename -eq $filename) {
             Write-Output "The $filename is avilable in $desstr account account"

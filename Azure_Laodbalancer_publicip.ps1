@@ -11,5 +11,5 @@ $subs=Get-AzureRmSubscription | Select-Object -ExpandProperty Name
 foreach($sub in $subs)
 {
 Set-Azurermcontext -Subscription $sub
-Get-AzureRmPublicIpAddress | where{$_.DnsSettings.Fqdn -like "*" -and $_.IpConfiguration.Id -like "*LoadBalancerFrontEnd*"} | Select-Object @{N='Subscription Name';E={$sub}}, ResourceGroupName, Name, Location, PublicIpAllocationMethod, PublicIpAddressVersion, IpAddress, IdleTimeoutInMinutes, ProvisioningState | Export-Csv C:\Temp\Az_loadbalancerpublicIp.csv -Append -NoTypeInformation
+Get-AzureRmPublicIpAddress | Where-Object{$_.DnsSettings.Fqdn -like "*" -and $_.IpConfiguration.Id -like "*LoadBalancerFrontEnd*"} | Select-Object @{N='Subscription Name';E={$sub}}, ResourceGroupName, Name, Location, PublicIpAllocationMethod, PublicIpAddressVersion, IpAddress, IdleTimeoutInMinutes, ProvisioningState | Export-Csv C:\Temp\Az_loadbalancerpublicIp.csv -Append -NoTypeInformation
 }

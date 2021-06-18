@@ -2,5 +2,5 @@
  foreach($sub in $subs)
    {
    Set-AzureRmContext -Subscription $sub
-      Get-AzureRmPolicyState | where{$_.IsCompliant -ne "True"} | Select @{N='Subscription Name';E={$sub}}, * | Export-Csv C:\temp\Non_Complimant.csv -Append -NoTypeInformation
+      Get-AzureRmPolicyState | Where-Object{$_.IsCompliant -ne "True"} | Select-Object @{N='Subscription Name';E={$sub}}, * | Export-Csv C:\temp\Non_Complimant.csv -Append -NoTypeInformation
  }

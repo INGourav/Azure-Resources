@@ -52,7 +52,7 @@ foreach ($gw in $gateways) {
 	
 #Now we are checking all Azure App Service Certificates that are going to expire in next 30 days
 
- $appcerts = Get-AzureRmWebAppCertificate | where{$_.ExpirationDate -lt (Get-date).AddDays(30)}
+ $appcerts = Get-AzureRmWebAppCertificate | Where-Object{$_.ExpirationDate -lt (Get-date).AddDays(30)}
 
 foreach ($appcert in $appcerts) {
     #$appcertname = $appcert | Select Name

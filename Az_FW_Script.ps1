@@ -30,7 +30,7 @@ Set-AzFirewall -AzureFirewall $azfw
 # Create the allow list with both FQDN and IPAddresses
 $fw = Get-AzFirewall -Name "Name_of_Firewall" -ResourceGroupName "Name_of_ResourceGroup"
 $fw.ThreatIntelWhitelist = New-AzFirewallThreatIntelWhitelist `
-   -FQDN @("fqdn1", "fqdn2", …) -IpAddress @("ip1", "ip2", …)
+   -FQDN @("fqdn1", "fqdn2") -IpAddress @("ip1", "ip2")
 
 # Or Update FQDNs and IpAddresses separately
 $fw = Get-AzFirewall -Name $firewallname -ResourceGroupName $RG
