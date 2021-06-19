@@ -10,8 +10,8 @@
 
 #URL to login : - https://rdweb.wvd.microsoft.com/webclient/index.html
                   https://rdweb.wvd.microsoft.com/arm/webclient/index.html
-				  https://client.wvdselfhost.microsoft.com/arm/webclient/index.html
-				  https://rdweb-r0.wvd.microsoft.com/arm/webclient
+	          https://client.wvdselfhost.microsoft.com/arm/webclient/index.html
+	          https://rdweb-r0.wvd.microsoft.com/arm/webclient
 
 Note : - 
 It will sync onmicrosoft.com users if the primary domain is not defined in Azure AD or if the domain name is misspelt during user creation.
