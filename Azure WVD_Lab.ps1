@@ -71,14 +71,9 @@ New-ADUser -name $newUser -SamAccountName $newUser -UserPrincipalName $newUser@$
 
 
 
-
-
-
-
-
-
-
-
+##################################################
+# Map a File Share as a disk
+##################################################
 
 $connectTestResult = Test-NetConnection -ComputerName drtestwvdcacstr.file.core.windows.net -Port 445
 if ($connectTestResult.TcpTestSucceeded) {
