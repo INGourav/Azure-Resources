@@ -132,3 +132,39 @@ To terminate connection requests, we can utilise drain mode in the session host 
 19 - Install FSLogix setup on every session host VM and run "gpupdate /force"
 20 - Login session host and check if we have VHDX in fileshare
 21 - We can set App masking rule for users now. We have 4 types of App maskign rules:  Hiding rule, Redirect rule, App Container rule, Specify Value rule.
+22 - These rules can be assigned to Users, Group, Process, Network Location, Computer, Directory OU, ENV: variable
+23 - The rules has two files .fxa and .fxr where FXA contains assignments and FXR contains rules. (C:\prgram files\fslogix\app\rule)
+24 - It also ha a compile directory for the rules those are working on the machine (C:\prgram files\fslogix\app\compiled rules)
+25 - Rule hierarchy is followed from bottom to top
+26 - For deletion of Hostpool, we have to first remove application group associated to it
+27 - Once the application group is removed then we can remove/delete the hostpool
+28 - The session host (VMs) will be there and have to be deleted manually or through automation
+
+PowerShell code for the same: 
+
+
+    # Set the host pool variables 
+    $hostPoolResourceGroup = 'HostPoolRG'
+    $hostPoolName = 'HostPoolName'
+    
+    # Get the Application Groups
+    $appGroups = Get-AzWvdApplicationGroup -ResourceGroupName $hostPoolResourceGroup
+    
+    # Remove the Application Groups
+    foreach ($appGroup in $appGroups) {
+        Remove-AzWvdApplicationGroup -Name $appGroup.Name -ResourceGroupName $hostPoolResourceGroup
+        Write-Output "Removed: $($appGroup.name)"
+    }
+    
+    # Remove the Host Pool
+    Remove-AzWvdHostPool -Name $hostPoolName -ResourceGroupName $hostPoolResourceGroup -Force:$true
+    
+    # Remove the Resource Group
+    # View items in the Resource Group
+    Get-AzResource -ResourceGroupName $hostPoolResourceGroup | Select-Object Name,ResourceGroupName
+    
+    # Optional, be sure nothing in the Resource Group is still in use
+    Remove-AzResourceGroup -Name $hostPoolResourceGroup
+    
+    # View existing Resource Groups
+    Get-AzResourceGroup | Select-Object ResourceGroupName
