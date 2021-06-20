@@ -12,6 +12,7 @@
                   https://rdweb.wvd.microsoft.com/arm/webclient/index.html
 	          https://client.wvdselfhost.microsoft.com/arm/webclient/index.html
 	          https://rdweb-r0.wvd.microsoft.com/arm/webclient
+              httsps://rdweb.wvd.microsoft.coom/api/arm/feeddiscovery
 
 Note : - 
 It will sync onmicrosoft.com users if the primary domain is not defined in Azure AD or if the domain name is misspelt during user creation.
@@ -20,4 +21,114 @@ To terminate connection requests, we can utilise drain mode in the session host 
 #URL to fix user domain : - https://www.mirazon.com/office-365-dirsync-users-getting-domainname-onmicrosoft-com-as-default/
 
 8 - Create new application group (remote application) assign the users to this app group and add appliction from Start menu, File Path, MSIX.
-9 - 
+9 - Configure Azure file/Storage account
+    Create an OU and GPO to block password expiration
+	Create the storage account and Azure file share
+	Enable SMB permission
+	Set share permissions
+	Mount with "Superuser"
+	Set root NTFS permissions
+	Mount as a user
+	
+	Create OU and copy the name like "OU=NoComPWExpire,DC=elansdowne,DC=com"
+	
+
+10 - Create a storage account with Public endpoints from selected network (VEN01/WVDsubnet) and create a file share
+11 - Follow beneath steps: -
+    # Download AzFilesHybrid
+    # https://github.com/Azure-Samples/azure-files-samples/releases
+    
+    
+    ## Join the Storage Account for SMB Auth Microsoft Source:
+    ## https://docs.microsoft.com/en-us/azure/storage/files/storage-files-identity-ad-ds-enable
+    
+    #Change the execution policy to unblock importing AzFilesHybrid.psm1 module
+    Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
+    
+    # Navigate to where AzFilesHybrid is unzipped and stored and run to copy the files into your path
+    .\CopyToPSPath.ps1 
+    
+    #Import AzFilesHybrid module
+    Import-Module -Name AzFilesHybrid
+    
+    #Login with an Azure AD credential that has either storage account owner or contributor Azure role assignment
+    Connect-AzAccount
+    
+    
+    #Define parameters
+    $SubscriptionId = "<your-subscription-id-here>"
+    $ResourceGroupName = "<resource-group-name-here>"
+    $StorageAccountName = "<storage-account-name-here>"
+    
+    #Select the target subscription for the current session
+    Select-AzSubscription -SubscriptionId $SubscriptionId 
+    
+    # Register the target storage account with your active directory environment under the target OU (for example: specify the OU with Name as "UserAccounts" or DistinguishedName as "OU=UserAccounts,DC=CONTOSO,DC=COM"). 
+    # You can use to this PowerShell cmdlet: Get-ADOrganizationalUnit to find the Name and DistinguishedName of your target OU. If you are using the OU Name, specify it with -OrganizationalUnitName as shown below. If you are using the OU DistinguishedName, you can set it with -OrganizationalUnitDistinguishedName. You can choose to provide one of the two names to specify the target OU.
+    # You can choose to create the identity that represents the storage account as either a Service Logon Account or Computer Account (default parameter value), depends on the AD permission you have and preference. 
+    # Run Get-Help Join-AzStorageAccountForAuth for more details on this cmdlet.
+    
+    Join-AzStorageAccountForAuth `
+            -ResourceGroupName $ResourceGroupName `
+            -StorageAccountName $StorageAccountName `
+            -DomainAccountType "<ComputerAccount|ServiceLogonAccount>" ` # -DomainAccountType "ComputerAccount"
+            -OrganizationalUnitDistinguishedName "<ou-distinguishedname-here>" # -OrganizationalUnitDistinguishedName "OU=NoComPWExpire,DC=elansdowne,DC=com"
+			# If you don't provide the OU name as an input parameter, the AD identity that represents the storage account is created under the root directory.
+    
+    #You can run the Debug-AzStorageAccountAuth cmdlet to conduct a set of basic checks on your AD configuration with the logged on AD user. This cmdlet is supported on AzFilesHybrid v0.1.2+ version. For more details on the checks performed in this cmdlet, see Azure Files Windows troubleshooting guide.
+    Debug-AzStorageAccountAuth -StorageAccountName $StorageAccountName -ResourceGroupName $ResourceGroupName -Verbose
+    
+    
+    # Confirm the feature is enabled
+    # Get the target storage account
+    $storageaccount = Get-AzStorageAccount `
+            -ResourceGroupName $ResourceGroupName `
+            -Name $StorageAccountName
+    
+    # List the directory service of the selected service account
+    $storageAccount.AzureFilesIdentityBasedAuth.DirectoryServiceOptions
+    
+    # List the directory domain information if the storage account has enabled AD DS authentication for file shares
+    $storageAccount.AzureFilesIdentityBasedAuth.ActiveDirectoryProperties
+    
+    
+    
+    # Mount the file share as supper user
+    
+    #Define parameters
+    $StorageAccountName = "<storage-account-name-here>"
+    $ShareName = "<share-name-here>"
+    $StorageAccountKey = "<account-key-here>"
+    
+    #  Run the code below to test the connection and mount the share
+    $connectTestResult = Test-NetConnection -ComputerName "$StorageAccountName.file.core.windows.net" -Port 445
+    if ($connectTestResult.TcpTestSucceeded)
+    {
+      net use T: "\\$StorageAccountName.file.core.windows.net\$ShareName" /user:Azure\$StorageAccountName $StorageAccountKey
+    } 
+    else 
+    {
+      Write-Error -Message "Unable to reach the Azure storage account via port 445. Check to make sure your organization or ISP is not blocking port 445, or use Azure P2S VPN,   Azure S2S VPN, or Express Route to tunnel SMB traffic over a different port."
+    }
+    
+    
+    # Path to the file share
+    # Replace drive letter, storage account name and share name with your settings
+    # "\\wvdtestrag.file.core.windows.net\wvdtestragfs"
+
+
+
+12 - Assign SMB contributor on file share to WVD users group
+13 - Assign SMB elevated admin to potral admin account
+14 - Map file share to DC, Create a Profiles folder, Properties, Security, Advanced, Disable Inheritance, levave System, Administrator( ), Creator owner (Remove Full control from it), add wvd users group and assign modify permission to them.
+15 - Create a new OU for WVD session host and move all the computers (thos are serving WVD) in this OU.
+16 - Extract FSlogix and copy the .adml file in "A:\windows\SYSVOL\domain\Policies\PolicyDefinitions\en-US" and .admx in "A:\windows\SYSVOL\domain\Policies\PolicyDefinitions"
+17 - Open Group Policy Management and perform described settings,
+     Create a new group policy "FSLogixProfiles"
+	 Edit-> Policies->Admintrative Templates- >FSlogix-> Profile Container
+	 And Enable settings: Enabled, VHD Location (enable and add file share), Enable and set size, Delete local profile
+	 Now move to Contanier and Directory Naming and perform following tasks: Virtual Disk Type (Enable and VHDX), Swap Directory Name component
+18 - Now link WVDSessionhost OU to FSLogixProfiles policy
+19 - Install FSLogix setup on every session host VM and run "gpupdate /force"
+20 - Login session host and check if we have VHDX in fileshare
+21 - We can set App masking rule for users now. We have 4 types of App maskign rules:  Hiding rule, Redirect rule, App Container rule, Specify Value rule.
