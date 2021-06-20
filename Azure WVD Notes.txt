@@ -1,0 +1,23 @@
+#  MSIX - https://www.stephanvdkruis.com/category/microsoft/azure/
+
+1 - First, in Azure Active Directory, we built a custom domain.
+2 - Verify this in domain provider
+3 - Create a VM and promte this as a DC
+4 - Propogat custom DNS to VNET
+5 - Create a workspace (Place the workspace in another rg for better management and life-cycle)
+6 - Create a hostpool and Virtual machine inside it (VM can be created after the hostpool also Hostpool and VM can be in different location)
+7 - Assign rights on application groups (create a single group for all WVD users and single group for all similar kinda users) ( For ad sync, use Start-adsyncsynccycle; else, ad sync will take 30 minutes.)
+
+#URL to login : - https://rdweb.wvd.microsoft.com/webclient/index.html
+                  https://rdweb.wvd.microsoft.com/arm/webclient/index.html
+	          https://client.wvdselfhost.microsoft.com/arm/webclient/index.html
+	          https://rdweb-r0.wvd.microsoft.com/arm/webclient
+
+Note : - 
+It will sync onmicrosoft.com users if the primary domain is not defined in Azure AD or if the domain name is misspelt during user creation.
+To terminate connection requests, we can utilise drain mode in the session host (VM).
+
+#URL to fix user domain : - https://www.mirazon.com/office-365-dirsync-users-getting-domainname-onmicrosoft-com-as-default/
+
+8 - Create new application group (remote application) assign the users to this app group and add appliction from Start menu, File Path, MSIX.
+9 - 
