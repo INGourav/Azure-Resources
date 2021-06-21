@@ -1,11 +1,16 @@
 #  MSIX - https://www.stephanvdkruis.com/category/microsoft/azure/
 
+Note : - If we associate one app group to a workspace then all AG those are attached to same hostpool must be attached to that workspace.
+      VM should be domain joined (No wrokaround for this)
+	  Reverse connect (TCP) works behind the WVD for connection however we can also use RDP shortpath (UDP) on port 3390. We also have to make chnages in registry to use RDP shortpath.
+
 1 - First, in Azure Active Directory, we built a custom domain.
 2 - Verify this in domain provider
 3 - Create a VM and promte this as a DC
 4 - Propogat custom DNS to VNET
 5 - Create a workspace (Place the workspace in another rg for better management and life-cycle)
 6 - Create a hostpool and Virtual machine inside it (VM can be created after the hostpool also Hostpool and VM can be in different location)
+   There are two option in session host creation BFS and DFS (Max user default limit is 99999)
 7 - Assign rights on application groups (create a single group for all WVD users and single group for all similar kinda users) ( For ad sync, use Start-adsyncsynccycle; else, ad sync will take 30 minutes.)
 
 #URL to login : - https://rdweb.wvd.microsoft.com/webclient/index.html
@@ -168,3 +173,11 @@ PowerShell code for the same:
     
     # View existing Resource Groups
     Get-AzResourceGroup | Select-Object ResourceGroupName
+
+29 - We can also created session host in same host pool using our custom image and for that Registration key is required
+30 - Registration key can be created in Hostpool tab and they are only valid from 1 hour to 27 days
+https://docs.microsoft.com/en-us/azure/virtual-desktop/create-host-pools-powershell#register-the-virtual-machines-to-the-azure-virtual-desktop-host-pool
+
+31 - When we create a VM using custom image it starts with a lower version of agent however this will be updated by WVD in sometime. During this time the VM wouldn't be avilable to accept the sessions.
+32 - 
+
