@@ -119,7 +119,7 @@ To terminate connection requests, we can utilise drain mode in the session host 
     
     # Path to the file share
     # Replace drive letter, storage account name and share name with your settings
-    # "\\wvdtestrag.file.core.windows.net\wvdtestragfs"
+    # "\\wvdstrag.file.core.windows.net\wvdstragfs"
 
 
 
@@ -179,5 +179,45 @@ PowerShell code for the same:
 https://docs.microsoft.com/en-us/azure/virtual-desktop/create-host-pools-powershell#register-the-virtual-machines-to-the-azure-virtual-desktop-host-pool
 
 31 - When we create a VM using custom image it starts with a lower version of agent however this will be updated by WVD in sometime. During this time the VM wouldn't be avilable to accept the sessions.
-32 - 
+Note : -  We cannot change the VM sizes in single host pool, all VM should have same size in a hostpool as well as Disk types.
+32 - Steps for capturing a general WVD image 
 
+Create a VM
+Copy application to Machine
+Installation of apps
+Copy FSLogix rules to the machine
+sysprep, Gen, Out of Box, Shutdown
+Capture VM
+Create VM using the image in an existing hostpool or we can create a new one for this
+It will ask for DC details so it will be added in Domain also define the OU that we have created for WVD session host "OU=WVDsessionHost,DC=elansdowne,DC=com"
+
+33 - To optimize WVD we can refer below link: -
+https://docs.microsoft.com/en-us/windows-server/remote/remote-desktop-services/rds_vdi-recommendations-1909
+https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
+
+
+
+
+
+
+
+
+
+
+
+
+
+Links : -
+https://docs.microsoft.com/en-us/azure/virtual-desktop/
+https://docs.microsoft.com/en-us/azure/virtual-desktop/disaster-recovery
+https://docs.microsoft.com/en-us/azure/virtual-desktop/create-host-pools-user-profile
+https://docs.microsoft.com/en-us/fslogix/configure-cloud-cache-tutorial
+https://docs.microsoft.com/en-us/azure/virtual-desktop/rdp-quality-of-service-qos
+https://www.azurecorner.com/change-temporary-drive-azure-vm-use-d-persistent-data-disks/
+https://docs.microsoft.com/en-us/azure/virtual-machines/shared-image-galleries?WT.mc_id=AZ-MVP-5004159#image-versions
+https://docs.microsoft.com/en-us/azure/virtual-desktop/disaster-recovery?WT.mc_id=AZ-MVP-5004159#user-and-app-data
+https://azure.microsoft.com/en-gb/services/virtual-desktop/assessment/
+https://docs.microsoft.com/en-us/azure/virtual-desktop/rdp-quality-of-service-qos
+https://docs.microsoft.com/en-us/azure/storage/files/storage-files-identity-ad-ds-assign-permissions?WT.mc_id=AZ-MVP-5004159
+https://docs.microsoft.com/en-us/azure/virtual-desktop/rdp-quality-of-service-qos
+https://docs.microsoft.com/en-us/azure/architecture/example-scenario/wvd/windows-virtual-desktop-fslogix#antivirus-exclusions
