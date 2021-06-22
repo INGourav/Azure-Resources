@@ -180,4 +180,3 @@ https://docs.microsoft.com/en-us/azure/virtual-desktop/create-host-pools-powersh
 
 31 - When we create a VM using custom image it starts with a lower version of agent however this will be updated by WVD in sometime. During this time the VM wouldn't be avilable to accept the sessions.
 32 - 
-
