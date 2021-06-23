@@ -195,6 +195,9 @@ It will ask for DC details so it will be added in Domain also define the OU that
 https://docs.microsoft.com/en-us/windows-server/remote/remote-desktop-services/rds_vdi-recommendations-1909
 https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
 
+34 - 
+
+
 
 
 
@@ -221,3 +224,12 @@ https://docs.microsoft.com/en-us/azure/virtual-desktop/rdp-quality-of-service-qo
 https://docs.microsoft.com/en-us/azure/storage/files/storage-files-identity-ad-ds-assign-permissions?WT.mc_id=AZ-MVP-5004159
 https://docs.microsoft.com/en-us/azure/virtual-desktop/rdp-quality-of-service-qos
 https://docs.microsoft.com/en-us/azure/architecture/example-scenario/wvd/windows-virtual-desktop-fslogix#antivirus-exclusions
+https://docs.microsoft.com/en-us/azure/virtual-desktop/teams-on-avd
+https://docs.microsoft.com/en-us/azure/virtual-desktop/troubleshoot-client
+https://www.linkedin.com/pulse/windows-virtual-desktop-remoteapps-jason-byway
+https://docs.microsoft.com/en-us/windows-server/remote/remote-desktop-services/rds-roles#:~:text=The%20Remote%20Desktop%20Session%20Host%20%28RD%20Session%20Host%29,a%20supported%20browser%20by%20using%20the%20web%20client.
+https://docs.microsoft.com/en-us/azure/virtual-desktop/host-pool-load-balancing
+https://docs.microsoft.com/en-us/azure/virtual-desktop/configure-host-pool-load-balancing
+https://docs.microsoft.com/en-us/azure/virtual-desktop/rbac#workspace-contributor
+https://docs.microsoft.com/en-us/azure/logic-apps/create-automation-tasks-azure-resources
+https://docs.microsoft.com/en-us/troubleshoot/windows-server/networking/configure-secondary-name-server
