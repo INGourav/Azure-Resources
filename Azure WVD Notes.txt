@@ -195,12 +195,77 @@ It will ask for DC details so it will be added in Domain also define the OU that
 https://docs.microsoft.com/en-us/windows-server/remote/remote-desktop-services/rds_vdi-recommendations-1909
 https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
 
-34 - 
+34 - Drain mode disables new connection while not affecting active session
+35 - This is best practice to create an account to join domain the WVD, process is as follows: -
+ Open Active Directory users and computer
+ Create a new user like domainjoin@domain.com
+ Untick the box that we need to change password at first logoon
+ Now user has been created an its time to delgate the premissio on WVD OU
+ Right click on OU and select "Delegate Control"
+ Create a custom task to delegrate
+ Only the following objecs in the folder, computer objects, create selected objects in this folder
+ Create all child objects
+ Done
+ 
+ 
+PowerShell script for managing HostPool
 
 
+### Set Drain Mode on the Session Hosts ###
 
+# Connect to Azure AD
+Connect-AzAccount
 
+# Get current connection status
+Get-AzContext
 
+# Get Session Hosts drain mode status
+Get-AzWvdSessionHost -ResourceGroupName Lab2HPRG -HostPoolName Lab2HP | Select-Object Name,AllowNewSession
+
+# Enable drain mode on the Session Host
+Update-AzWvdSessionHost -ResourceGroupName Lab2HPRG -HostPoolName Lab2HP -SessionHostName Lab2SH-1.ciraltoslab.com -AllowNewSession:$false
+
+### Remote the Session Host ###
+
+# Set some variables first
+$resourceGroup = "ResourceGroupName"
+$hostPool = "HostPoolName"
+$sessionHost = "SessionHostName"
+
+# Get active sessions on all the Session Host
+Get-AzWvdSessionHost -ResourceGroupName $resourceGroup -HostPoolName $hostPool | Select-Object Name,AllowNewSession,Session
+
+# Get active sessions on a Session Host
+Get-AzWvdUserSession -ResourceGroupName $resourceGroup -HostPoolName $hostPool -SessionHostName $sessionHost | Select-Object UserPrincipalName,Name,ID | Sort-Object Name
+
+# Send a message to all users on the Session Host session
+$sessions = Get-AzWvdUserSession -ResourceGroupName $resourceGroup -HostPoolName $hostPool -SessionHostName $sessionHost
+foreach ($session in $sessions) {
+    $userMessage = @{
+        HostPoolName = $hostPool
+        ResourceGroupName = $resourceGroup
+        SessionHostName = $sessionHost
+        UserSessionId = ($session.id -split '/')[-1]
+        MessageTitle = "Time to Log Off"
+        MessageBody = "The system will shut down in 1 minute.  Save and exit."
+    }
+    Send-AzWvdUserSessionMessage @userMessage
+}
+
+# Remove all user sessions from a Session Host
+$sessions = Get-AzWvdUserSession -ResourceGroupName $resourceGroup -HostPoolName $hostPool -SessionHostName $sessionHost
+foreach ($session in $sessions) {
+    $removeSession = @{
+        HostPoolName = $hostPool
+        ResourceGroupName = $resourceGroup
+        SessionHostName = $sessionHost
+        UserSessionId = ($session.id -split '/')[-1]
+    }
+    Remove-AzWvdUserSession @removeSession
+}
+
+# Remove a Session Host
+Remove-AzWvdSessionHost -ResourceGroupName $resourceGroup -HostPoolName $hostPool -Name $sessionHost
 
 
 
