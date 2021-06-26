@@ -8,3 +8,8 @@ Get-AzVirtualNetwork -Name "testnetwork" -ResourceGroupName "drtestwvdcac" | Tes
 
 # To Export tags of any Azure resource
 Get-AzVirtualNetwork -Name "testnetwork" -ResourceGroupName "drtestwvdcac" | Select-Object ResourceGroupName,  @{Name='Tags';Expression={ foreach ($key in $_.Tag.Keys ) { $Key + "=" + $_.Tag[$key] + -join";"}}}
+
+# Static NIC IP
+$NIC = Get-AzNetworkInterface -ResourceGroupName "ad-vm-rg" -Name "advm-01-nic"
+$NIC.IpConfigurations[0].PrivateIpAllocationMethod = 'Static'
+Set-AzNetworkInterface -NetworkInterface $NIC
