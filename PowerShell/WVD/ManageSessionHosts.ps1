@@ -13,11 +13,6 @@ Get-AzWvdSessionHost -ResourceGroupName Lab2HPRG -HostPoolName Lab2HP | Select-O
 Update-AzWvdSessionHost -ResourceGroupName Lab2HPRG -HostPoolName Lab2HP -SessionHostName Lab2SH-1.ciraltoslab.com -AllowNewSession:$false
 
 
-
-
-
-
-
 ### Remote the Session Host ###
 
 # Set some variables first

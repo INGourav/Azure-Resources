@@ -3,10 +3,12 @@
 ##################################################
 
 # Set values for your environment
-$numUsers = "10"
-$userPrefix = "WVDUser"
+$wvduser = "3"
+$hruser = "5"
+$wvduserprefix = "WVDUser"
+$hruserprefix = "HRWVDUser"
 $passWord = "P@ssword!"
-$userDomain = "ciraltoslab.com"
+$userDomain = "azurelearn.com"
 
 # Import the AD Module
 Import-Module ActiveDirectory
@@ -15,9 +17,14 @@ Import-Module ActiveDirectory
 $UserPass = ConvertTo-SecureString -AsPlainText "$passWord" -Force
 
 #Add the users
-for ($i=0; $i -le $numUsers; $i++) {
-$newUser = $userPrefix + $i
+for ($i=0; $i -le $wvduser; $i++) {
+$newUser = $wvduserprefix + $i
 New-ADUser -name $newUser -SamAccountName $newUser -UserPrincipalName $newUser@$userDomain -GivenName $newUser -Surname $newUser -DisplayName $newUser `
 -AccountPassword $userPass -ChangePasswordAtLogon $false -PasswordNeverExpires $true -Enabled $true
 }
 
+for ($i=0; $i -le $hruser; $i++) {
+    $newUser = $hruserprefix + $i
+    New-ADUser -name $newUser -SamAccountName $newUser -UserPrincipalName $newUser@$userDomain -GivenName $newUser -Surname $newUser -DisplayName $newUser `
+    -AccountPassword $userPass -ChangePasswordAtLogon $false -PasswordNeverExpires $true -Enabled $true
+    }

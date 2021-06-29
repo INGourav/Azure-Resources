@@ -3,8 +3,8 @@
 $DatabasePath = "c:\windows\NTDS"
 $DomainMode = "WinThreshold"
 #Change the Domain name and Domain Net BIOS Name to match your public domain name
-$DomainName = "ciraltoslab.com"
-$DomaninNetBIOSName = "ciraltoslab"
+$DomainName = "azurelearn.com"
+$DomaninNetBIOSName = "azurelearn"
 $ForestMode = "WinThreshold"
 $LogPath = "c:\windows\NTDS"
 $SysVolPath = "c:\windows\SYSVOL"
