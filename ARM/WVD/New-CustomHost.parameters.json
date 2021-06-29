@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "Prefix": {
+      "value": "Multi-10"
+    },
+    "AdminUserName": {
+      "value": "lntad"
+    },    
+    "DomainFQDN": {
+      "value": "MSAzureAcademy.com"
+    },
+    "Instance": {
+      "value": 2
+    },    
+    "VMSize": {
+      "value": "Small"
+    },    
+    "autoShutdownTime": {
+      "value": "23:00"
+    },
+    "autoShutdownTimeZone": {
+      "value": "Eastern Standard Time"
+    },
+    "VnetRgName": {
+      "value": "AA-WVD-VNet-rg"
+    },
+    "VnetName": {
+      "value": "AA-WVD-vNET"
+    },
+    "SubnetName": {
+      "value": "CoreSubnet"
+    }
+  }
+}
