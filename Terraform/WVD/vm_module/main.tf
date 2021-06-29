@@ -17,8 +17,8 @@ resource "azurerm_network_interface" "loc-env-vm-nic" {
 
   tags = {
     Environment = var.environment
-    BuildBy     = var.tag_buildby
-    BuildDate   = var.tag_builddate
+    BuildBy     = var.buildby
+    BuildDate   = var.builddate
   }
 }
 
@@ -103,7 +103,7 @@ resource "azurerm_virtual_machine" "loc-env-vm" {
 
   tags = {
     Environment             = var.environment
-    BuildBy                 = var.tag_buildby
-    BuildDate               = var.tag_builddate
+    BuildBy                 = var.buildby
+    BuildDate               = var.builddate
   }
 }

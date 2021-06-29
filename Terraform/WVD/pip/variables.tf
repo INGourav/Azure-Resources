@@ -2,11 +2,11 @@ variable "environment" {
   description = "Production, Development, etc"
 }
 
-variable "tag_buildby" {
+variable "buildby" {
   description = "Racker that built the resource."
 }
 
-variable "tag_builddate" {
+variable "builddate" {
   description = "Date in ISO-8601 format (yyyymmdd)."
 }
 

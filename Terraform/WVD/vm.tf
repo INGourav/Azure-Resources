@@ -49,9 +49,8 @@ module "vm01" {
   admin_password = random_string.password_vm.result
   location       = var.location
   environment    = "WVD"
-  tag_buildby    = "Gourav Kumar"
-  tag_builddate  = 20200623
-  # tag_automation_exclude = "None"
+  buildby        = "Gourav Kumar"
+  builddate      = 20200623
 }
 
 

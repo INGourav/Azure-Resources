@@ -10,7 +10,7 @@ resource "azurerm_public_ip" "pip" {
 
   tags = {
     Environment = var.environment
-    BuildBy     = var.tag_buildby
-    BuildDate   = var.tag_builddate
+    BuildBy     = var.buildby
+    BuildDate   = var.builddate
   }
 }

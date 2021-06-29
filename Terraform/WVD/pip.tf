@@ -13,6 +13,6 @@ module "pip" {
 
   location      = var.location
   environment   = "WVD"
-  tag_buildby   = "Gourav Kumar"
-  tag_builddate = 20200623
+  buildby   = "Gourav Kumar"
+  builddate = 20200623
 }
