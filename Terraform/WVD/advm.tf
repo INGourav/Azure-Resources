@@ -49,8 +49,8 @@ module "advm01" {
   admin_password = random_string.password_vm.result
   location       = var.location
   environment    = "WVD"
-  buildby    = "Gourav Kumar"
-  builddate  = 20200623
+  buildby        = "Gourav Kumar"
+  builddate      = 20200623
 }
 
 

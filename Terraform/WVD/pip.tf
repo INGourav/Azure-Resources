@@ -11,8 +11,8 @@ module "pip" {
   allocation = "Static"
 
 
-  location      = var.location
-  environment   = "WVD"
-  buildby   = "Gourav Kumar"
-  builddate = 20200623
+  location    = var.location
+  environment = "WVD"
+  buildby     = "Gourav Kumar"
+  builddate   = 20200623
 }
