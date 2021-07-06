@@ -12,6 +12,7 @@ Note : - If we associate one app group to a workspace then all AG those are atta
 6 - Create a hostpool and Virtual machine inside it (VM can be created after the hostpool also Hostpool and VM can be in different location)
    There are two option in session host creation BFS and DFS (Max user default limit is 99999)
 7 - Assign rights on application groups (create a single group for all WVD users and single group for all similar kinda users) ( For ad sync, use Start-adsyncsynccycle; else, ad sync will take 30 minutes.)
+Path and command of module : Import-Module 'C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync\ADSync.psd1'
 
 #URL to login : - https://rdweb.wvd.microsoft.com/webclient/index.html
                   https://rdweb.wvd.microsoft.com/arm/webclient/index.html
@@ -36,6 +37,14 @@ To terminate connection requests, we can utilise drain mode in the session host 
 	Mount as a user
 	
 	Create OU and copy the name like "OU=NoComPWExpire,DC=elansdowne,DC=com"
+	
+Steps: - 
+    Create an OU in AD with name like "NoPwExpire"  | Distinguished name sample "OU=NoPwdExpire,DC=elansdowne,DC=com"
+	Open Group Policy Management
+	Domain- > Group Policy Object-> New->  Name would be "NoPwExpire" or something similar
+	Right click on the same, Edit-> Policies-> Windows Settings->  Security Settings-> Local Policy-> Security Options-> Domain Member: Maximum Machine account password and set this to 0 (Zero)
+	Close this and Move to Group Policy Management
+	Right click on OU "NoPwExpire" and link and existing GPO
 	
 
 10 - Create a storage account with Public endpoints from selected network (VEN01/WVDsubnet) and create a file share
@@ -268,14 +277,29 @@ foreach ($session in $sessions) {
 Remove-AzWvdSessionHost -ResourceGroupName $resourceGroup -HostPoolName $hostPool -Name $sessionHost
 
 
+Creation of Shared Image Gallery (SIG)
+Each image replica can be used to create 20 at a single time.
+
+
+For teams cache exclusion use beneath link: -
+https://techcommunity.microsoft.com/t5/azure-virtual-desktop/wvd-fslogix-reduce-profile-container-size-exclude-teams-cache/m-p/1503683
 
 
 
 
 
 
+Some key points for troubleshooting:-
+1). msrdcw used to restore the default Remote Desktop client settings and unsubscribe from all workspaces.
+2). Run qwinsta to get the user's session ID.
+3). To migrate from on-prem to Azure WVD refer this link : -
+https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/migrate/azure-best-practices/contoso-migration-rds-to-wvd
+4). Install office on a master image:-
+https://docs.microsoft.com/en-us/azure/virtual-desktop/install-office-on-wvd-master-image?WT.mc_id=AZ-MVP-5004159#install-onedrive-in-per-machine-mode
+5). 
 
-Links : -
+
+Links to study: -
 https://docs.microsoft.com/en-us/azure/virtual-desktop/
 https://docs.microsoft.com/en-us/azure/virtual-desktop/disaster-recovery
 https://docs.microsoft.com/en-us/azure/virtual-desktop/create-host-pools-user-profile
@@ -298,3 +322,4 @@ https://docs.microsoft.com/en-us/azure/virtual-desktop/configure-host-pool-load-
 https://docs.microsoft.com/en-us/azure/virtual-desktop/rbac#workspace-contributor
 https://docs.microsoft.com/en-us/azure/logic-apps/create-automation-tasks-azure-resources
 https://docs.microsoft.com/en-us/troubleshoot/windows-server/networking/configure-secondary-name-server
+https://www.go-euc.com/what-is-the-best-azure-virtual-machine-size-for-wvd-using-citrix-cloud/
