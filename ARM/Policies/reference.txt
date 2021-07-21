@@ -1,0 +1,10 @@
+https://docs.microsoft.com/en-us/azure/governance/policy/tutorials/create-and-manage
+https://docs.microsoft.com/en-us/azure/governance/policy/tutorials/create-custom-policy-definition
+https://docs.microsoft.com/en-us/azure/governance/policy/concepts/definition-structure
+https://docs.microsoft.com/en-us/azure/governance/policy/concepts/effects
+https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-tutorial-use-template-reference?tabs=CLI
+
+
+https://docs.microsoft.com/en-us/azure/governance/policy/
+
+https://youtu.be/dxMaYF2GB7o
