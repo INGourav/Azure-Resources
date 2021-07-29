@@ -26,7 +26,7 @@ if ($null -ne $Acls) {
     $vaultinfo | Add-Member -MemberType NoteProperty -Name "VNET" -Value $Acls.split('/')[-3]
     $vaultinfo | Add-Member -MemberType NoteProperty -Name "VNET ResourceGroup" -Value $Acls.split('/')[4]
     $vaultinfo | Add-Member -MemberType NoteProperty -Name "Subnet" -Value $Acls.split('/')[-1]
-    $vaultinfo | Format-List
+    $vaultinfo | Export-Csv C:\temp\KeyVaultinfo.csv -Append -NoTypeInformation
 } else {
     $vaultinfo = New-Object psobject
     $vaultinfo | Add-Member -MemberType NoteProperty -Name "Subscription ID" -Value $vault.ResourceId.Split('/')[2]
@@ -43,6 +43,6 @@ if ($null -ne $Acls) {
     $vaultinfo | Add-Member -MemberType NoteProperty -Name "VNET" -Value "No VNeT Attached"
     $vaultinfo | Add-Member -MemberType NoteProperty -Name "VNET ResourceGroup" -Value "N/A"
     $vaultinfo | Add-Member -MemberType NoteProperty -Name "Subnet" -Value "No VNeT Attached"
-    $vaultinfo | Format-List
+    $vaultinfo | Export-Csv C:\temp\KeyVaultinfo.csv -Append -NoTypeInformation
 }
 }
