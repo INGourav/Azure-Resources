@@ -1,3 +1,10 @@
+<#
+Author : - Gourav Kumar
+Draft One submitted by : - Ankit Kotnala
+How to run,
+.\AzureDataLakeACL.ps1 -datalakestr "datalakestr" -datalakestrkey "datalakestrkey" -datalakecontainer "datalakecontainer" -userorgroup "Group" -guid "groupguid"
+#>
+
 Param(
 [parameter (Mandatory=$True, Position=0, ValueFromPipeLine=$True, HelpMessage= "Provide the Datalake storage account name")]
 [Alias('DataLake')]
