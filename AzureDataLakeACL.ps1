@@ -11,56 +11,53 @@ How to run for access on directory
 #>
 
 Param(
-[parameter (Mandatory=$True, ValueFromPipeLine=$True, HelpMessage= "Provide the Datalake storage account name")]
-[Alias('DataLake')]
-[ValidateNotNullOrEmpty()]
-[string]$datalakestr,
+    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the Datalake storage account name")]
+    [Alias('DataLake')]
+    [ValidateNotNullOrEmpty()]
+    [string]$datalakestr,
 
-[parameter (Mandatory=$True, ValueFromPipeLine=$True, HelpMessage= "Provide the Datalake storage account key")]
-[Alias('DataLake Key')]
-[ValidateNotNullOrEmpty()]
-[string]$datalakestrkey,
+    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the Datalake storage account key")]
+    [Alias('DataLake Key')]
+    [ValidateNotNullOrEmpty()]
+    [string]$datalakestrkey,
 
-[parameter (Mandatory=$True, ValueFromPipeLine=$True, HelpMessage= "Provide the Datalake storage container")]
-[Alias('DataLake Container')]
-[ValidateNotNullOrEmpty()]
-[string]$datalakecontainer,
+    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the Datalake storage container")]
+    [Alias('DataLake Container')]
+    [ValidateNotNullOrEmpty()]
+    [string]$datalakecontainer,
 
-[parameter (Mandatory=$false, ValueFromPipeLine=$True, HelpMessage= "Provide the Datalake storage container directory")]
-[Alias('DataLake Container Directory Name')]
-[string]$datalakecontainerdir,
+    [parameter (Mandatory = $false, ValueFromPipeLine = $True, HelpMessage = "Provide the Datalake storage container directory")]
+    [Alias('DataLake Container Directory Name')]
+    [string]$datalakecontainerdir,
 
-[parameter (Mandatory=$True, ValueFromPipeLine=$True, HelpMessage= "Provide the entity name either user or group, by default it is user")]
-[Alias('Want to run for User or Group')]
-[ValidateNotNullOrEmpty()]
-[string]$userorgroup = "User",
+    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the entity name either user or group, by default it is user")]
+    [Alias('Want to run for User or Group')]
+    [ValidateNotNullOrEmpty()]
+    [string]$userorgroup = "User",
 
-[parameter (Mandatory=$True, ValueFromPipeLine=$True, HelpMessage= "Provide the GUID or user or a group for access")]
-[Alias('User or Group GUID')]
-[ValidateNotNullOrEmpty()]
-[string]$guid
+    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the GUID or user or a group for access")]
+    [Alias('User or Group GUID')]
+    [ValidateNotNullOrEmpty()]
+    [string]$guid
 
 )
 
 $adsc = New-AzStorageContext -StorageAccountName $datalakestr -StorageAccountKey $datalakestrkey
-$datalakecontainerdir = $file
-if ($null -eq $file) {
 
-    $filesystemName = $datalakecontainer
-    $dirname = $datalakecontainerdir
+if ($null -match $datalakecontainerdir) {
+
     $acl = (Get-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer).ACL
     $acl = set-AzDataLakeGen2ItemAclObject -AccessControlType user -EntityID $guid -Permission rw- -InputObject $acl 
-    Update-AzDataLakeGen2Item -Context $adsc -FileSystem $filesystemName -Acl $acl 
-} else {
-    $filesystemName = $datalakecontainer
-    $dirname = $datalakecontainerdir
+    Update-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer -Acl $acl
+
+}
+else {
+
     $acl = (Get-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer -Path $dirname).ACL
     $acl = set-AzDataLakeGen2ItemAclObject -AccessControlType user -EntityID $guid -Permission rw- -InputObject $acl 
-    Update-AzDataLakeGen2Item -Context $adsc -FileSystem $filesystemName -Path $dirname -Acl $acl
+    Update-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer -Path $datalakecontainerdir -Acl $acl
+
 }
-
-
-
 
 
 
