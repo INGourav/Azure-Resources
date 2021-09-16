@@ -47,24 +47,3 @@ $adsc = New-AzStorageContext -StorageAccountName $datalakestr -StorageAccountKey
        $acl = Set-AzDataLakeGen2ItemAclObject -AccessControlType User -EntityId $guid -Permission rw- `
        Update-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer -Acl $acl -Verbose
    }
-
-
-
-
-
-############# Draft One #################
-$strname = "datalakestorage"
-$strkey = "HCGXnI2jHYOd1cXzHSpwkTbRgbEJvHcbdqXsg3MqacpN+ZG7gnwuNOk9fIF25vlFJuCWpfMlVZwkSSzos2XS1g=="
-$filesystemName = "test" #filesystem = container 
-$dirname = "kotnala"  #dirname = folder in container 
-$entity = "a367ea6c-f1e2-401d-b909-00c7f0a5ab91" #guid of user or group
-$ctx = New-AzStorageContext -StorageAccountName $strname -StorageAccountKey $strkey
-#Get-AzDataLakeGen2Item -Context $ctx -FileSystem $filesystemName
-#$dir = Get-AzDataLakeGen2Item -Context $ctx -FileSystem $filesystemName -Path $dirname
-
-
-$acl = Set-AzDataLakeGen2ItemAclObject -AccessControlType User -EntityId $entity -Permission rw-
-Update-AzDataLakeGen2Item -Context $ctx -FileSystem $filesystemName  -Acl $acl -Verbose -Path $dirname
-#(Get-AzDataLakeGen2Item -Context $ctx -FileSystem $filesystemName).ACL #-Path $dirname
-
-
