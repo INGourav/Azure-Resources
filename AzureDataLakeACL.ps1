@@ -26,7 +26,7 @@ Param(
 [string]$datalakecontainerdir,
 
 [parameter (Mandatory=$True, Position=4, ValueFromPipeLine=$True, HelpMessage= "Provide the entity name either user or group, by default it is user")]
-[Alias('Want to for User or Group')]
+[Alias('Want to run for User or Group')]
 [ValidateNotNullOrEmpty()]
 [string]$userorgroup = "User",
 
