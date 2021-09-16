@@ -50,13 +50,13 @@ if ($null -eq $file) {
     $dirname = $datalakecontainerdir
     $acl = (Get-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer).ACL
     $acl = set-AzDataLakeGen2ItemAclObject -AccessControlType user -EntityID $guid -Permission rw- -InputObject $acl 
-    Update-AzDataLakeGen2Item -Context $ctx -FileSystem $filesystemName -Acl $acl 
+    Update-AzDataLakeGen2Item -Context $adsc -FileSystem $filesystemName -Acl $acl 
 } else {
     $filesystemName = $datalakecontainer
     $dirname = $datalakecontainerdir
     $acl = (Get-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer -Path $dirname).ACL
     $acl = set-AzDataLakeGen2ItemAclObject -AccessControlType user -EntityID $guid -Permission rw- -InputObject $acl 
-    Update-AzDataLakeGen2Item -Context $ctx -FileSystem $filesystemName -Path $dirname -Acl $acl
+    Update-AzDataLakeGen2Item -Context $adsc -FileSystem $filesystemName -Path $dirname -Acl $acl
 }
 
 
