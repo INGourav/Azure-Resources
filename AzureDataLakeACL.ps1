@@ -42,7 +42,7 @@ Param(
     [parameter (Mandatory = $false, ValueFromPipeLine = $True, HelpMessage = "Want to add user or remove")]
     [Alias('add or remove')]
     [ValidateNotNullOrEmpty()]
-    [string]$mode ="add",
+    [string]$mode = "add",
 
     [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the Datalake storage account name")]
     [Alias('DataLake')]
@@ -96,27 +96,29 @@ if ($mode -eq "add") {
             $acl = Set-AzDataLakeGen2ItemAclObject -AccessControlType $userorgroup -EntityId $guid -Permission $permission -DefaultScope
             Update-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer -Acl $acl
             
-        } else {
+        }
+        else {
             $acl = Set-AzDataLakeGen2ItemAclObject -AccessControlType $userorgroup -EntityId $guid -Permission $permission -DefaultScope
             Update-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer -Acl $acl -Path $datalakecontainerdir
         }
-     }
-     else {
+    }
+    else {
      
-         if ($null -match $datalakecontainerdir) {
+        if ($null -match $datalakecontainerdir) {
      
-             $acl = (Get-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer).ACL
-             $acl = set-AzDataLakeGen2ItemAclObject -AccessControlType $userorgroup -EntityID $guid -Permission $permission -InputObject $acl 
-             Update-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer -Acl $acl
+            $acl = (Get-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer).ACL
+            $acl = set-AzDataLakeGen2ItemAclObject -AccessControlType $userorgroup -EntityID $guid -Permission $permission -InputObject $acl 
+            Update-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer -Acl $acl
          
-         } else {
+        }
+        else {
          
-             $acl = (Get-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer -Path $datalakecontainerdir).ACL
-             $acl = set-AzDataLakeGen2ItemAclObject -AccessControlType $userorgroup -EntityID $guid -Permission $permission -InputObject $acl 
-             Update-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer -Path $datalakecontainerdir -Acl $acl
+            $acl = (Get-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer -Path $datalakecontainerdir).ACL
+            $acl = set-AzDataLakeGen2ItemAclObject -AccessControlType $userorgroup -EntityID $guid -Permission $permission -InputObject $acl 
+            Update-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer -Path $datalakecontainerdir -Acl $acl
          
-         }
-     }
+        }
+    }
 } 
 else {
 
@@ -127,23 +129,25 @@ else {
             $acl = Set-AzDataLakeGen2ItemAclObject -AccessControlType $userorgroup -EntityId $guid -Permission $permission -DefaultScope
             Remove-AzDataLakeGen2AclRecursive -FileSystem $datalakecontainer -Acl $acl -Context $adsc
             
-        } else {
+        }
+        else {
             $acl = Set-AzDataLakeGen2ItemAclObject -AccessControlType $userorgroup -EntityId $guid -Permission $permission -DefaultScope
             Remove-AzDataLakeGen2AclRecursive -FileSystem $datalakecontainer -Path $datalakecontainerdir -Acl $acl -Context $adsc
         }
-     }
-     else {
+    }
+    else {
      
-         if ($null -match $datalakecontainerdir) {
+        if ($null -match $datalakecontainerdir) {
      
-             $acl = set-AzDataLakeGen2ItemAclObject -AccessControlType $userorgroup -EntityID $guid -Permission $permission -InputObject $acl 
-             Remove-AzDataLakeGen2AclRecursive -FileSystem $datalakecontainer -Acl $acl -Context $adsc
+            $acl = set-AzDataLakeGen2ItemAclObject -AccessControlType $userorgroup -EntityID $guid -Permission $permission -InputObject $acl 
+            Remove-AzDataLakeGen2AclRecursive -FileSystem $datalakecontainer -Acl $acl -Context $adsc
          
-         } else {
+        }
+        else {
          
-             $acl = set-AzDataLakeGen2ItemAclObject -AccessControlType $userorgroup -EntityID $guid -Permission $permission -InputObject $acl 
-             Remove-AzDataLakeGen2AclRecursive -FileSystem $datalakecontainer -Path $datalakecontainerdir -Acl $acl -Context $adsc 
+            $acl = set-AzDataLakeGen2ItemAclObject -AccessControlType $userorgroup -EntityID $guid -Permission $permission -InputObject $acl 
+            Remove-AzDataLakeGen2AclRecursive -FileSystem $datalakecontainer -Path $datalakecontainerdir -Acl $acl -Context $adsc 
          
-         }
-     }
+        }
+    }
 }
