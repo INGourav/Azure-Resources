@@ -39,7 +39,7 @@ How to run to remove global access on directory
 
 [CmdletBinding()]
 Param(
-    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Want to add user or remove")]
+    [parameter (Mandatory = $false, ValueFromPipeLine = $True, HelpMessage = "Want to add user or remove")]
     [Alias('add or remove')]
     [ValidateNotNullOrEmpty()]
     [string]$mode ="add",
