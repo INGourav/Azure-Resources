@@ -4,6 +4,7 @@ Reach me : - gouravin@outlook.com
 Draft One submitted by : - Ankit Kotnala
 Vesrion : - 2.0.2
 
+---Version 2.0.2 update---
 If you have user principal name handy with you and do not know how to fetch guid for the user then use below trick,
 replace -guid flag with -userprincipal and give the id of the user (like, gourav@azuretest.com) that exists in Azure,
 Example run : -
