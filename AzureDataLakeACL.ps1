@@ -2,7 +2,12 @@
 Author : - Gourav Kumar
 Reach me : - gouravin@outlook.com
 Draft One submitted by : - Ankit Kotnala
-Vesrion : - 2.0.1
+Vesrion : - 2.0.2
+
+If you have user principal name handy with you and do not know how to fetch guid for the user then use below trick,
+replace -guid flag with -userprincipal and give the id of the user (like, gourav@azuretest.com) that exists in Azure,
+Example run : -
+.\AzureDataLakeACL.ps1 -datalakestr 'datalake storage account' -datalakestrkey 'datalake storage account key' -datalakecontainer 'container name' -userorgroup <user|group> -userprincipal 'userid' -permission rw-
 
 ------------- addition of access ---------------
 
@@ -74,10 +79,14 @@ Param(
     [ValidateNotNullOrEmpty()]
     [string]$userorgroup = "User",
 
-    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the GUID or user or a group for access")]
+    [parameter (Mandatory = $false, ValueFromPipeLine = $True, HelpMessage = "Provide the GUID or user or a group for access")]
+    [Alias('User or Group GUID')]
+    [string]$guid = $null,
+
+    [parameter (Mandatory = $false, ValueFromPipeLine = $True, HelpMessage = "Provide the User principal name of user e.g: - gourav@testazure.com")]
     [Alias('User or Group GUID')]
     [ValidateNotNullOrEmpty()]
-    [string]$guid,
+    [string]$userprincipal,
 
     [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the level of permission")]
     [Alias('r--, -w-, rw-, --x')]
@@ -85,6 +94,13 @@ Param(
     [string]$permission
 
 )
+
+if ($null -eq $guid) {
+
+    $guid = (Get-AzADUser | Where-Object {$_.UserPrincipalName -eq $userprincipal}).Id
+} else {
+    $guid = $guid
+}
 
 $adsc = New-AzStorageContext -StorageAccountName $datalakestr -StorageAccountKey $datalakestrkey
 
