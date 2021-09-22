@@ -8,8 +8,11 @@ Vesrion : - 2.0.2
 If you have user principal name handy with you and do not know how to fetch guid for the user then use below trick,
 replace -guid flag with -userprincipal and give the id of the user (like, gourav@azuretest.com) that exists in Azure,
 Example run : -
+To add access,
 .\AzureDataLakeACL.ps1 -datalakestr 'datalake storage account' -datalakestrkey 'datalake storage account key' -datalakecontainer 'container name' -userorgroup <user|group> -userprincipal 'userid' -permission rw-
 
+To remove access,
+.\AzureDataLakeACL.ps1 -datalakestr 'datalake storage account' -datalakestrkey 'datalake storage account key' -datalakecontainer 'container name' -userorgroup <user|group> -userprincipal 'userid' -permission rw- -mode remove
 ------------- addition of access ---------------
 
 How to run to add access on container
@@ -96,6 +99,7 @@ Param(
 
 )
 
+# Checking if user has given guid or userid to grant the permission and performing the task accordingly
 if ($null -eq $guid) {
 
     $guid = (Get-AzADUser | Where-Object { $_.UserPrincipalName -eq $userprincipal }).Id
@@ -104,10 +108,13 @@ else {
     $guid = $guid
 }
 
+# setting azure datalake storage account context
 $adsc = New-AzStorageContext -StorageAccountName $datalakestr -StorageAccountKey $datalakestrkey
 
+# running the loops if user want to add the permission on given datalake storage
 if ($mode -eq "add") {
 
+    # loop will run if we want to add user under default permission
     if ($scope -eq "global") {
 
         if ($null -match $datalakecontainerdir) {
@@ -122,7 +129,8 @@ if ($mode -eq "add") {
         }
     }
     else {
-     
+
+        # loop will run if we want to add user under access permission        
         if ($null -match $datalakecontainerdir) {
      
             $acl = (Get-AzDataLakeGen2Item -Context $adsc -FileSystem $datalakecontainer).ACL
@@ -141,6 +149,7 @@ if ($mode -eq "add") {
 } 
 else {
 
+    # running the loops if user want to omit the permission on given datalake storage    
     if ($scope -eq "global") {
 
         if ($null -match $datalakecontainerdir) {
