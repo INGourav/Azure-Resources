@@ -97,8 +97,9 @@ Param(
 
 if ($null -eq $guid) {
 
-    $guid = (Get-AzADUser | Where-Object {$_.UserPrincipalName -eq $userprincipal}).Id
-} else {
+    $guid = (Get-AzADUser | Where-Object { $_.UserPrincipalName -eq $userprincipal }).Id
+}
+else {
     $guid = $guid
 }
 
