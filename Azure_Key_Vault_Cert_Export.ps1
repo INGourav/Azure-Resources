@@ -25,7 +25,6 @@ Param(
     [ValidateNotNullOrEmpty()]
     [string]$certpwd,
 
-
     [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the location to store the certicate in local machine")]
     [Alias('location we want to store the certicate')]
     [ValidateNotNullOrEmpty()]
