@@ -4,7 +4,7 @@ This export the given certificate from the Azure KeyVault with its key value pai
 Currently this script exports the given one certificate in a single run however I am working on version 2 that can export all certificate in single run
 
 How to run,
-.\Azure_Key_Vault_Cert_Export.ps1 -vaultname 'azkeyvault23' -certname 'azkeyvault23cert' -dir 'C:\temp\'
+.\Azure_Key_Vault_Cert_Export.ps1 -vaultname 'azkeyvault23' -certname 'azkeyvault23cert' -certpwd 'P@s$w0rD' -dir 'C:\temp\'
 
 Version = 1.0.0
 #>
@@ -16,12 +16,18 @@ Param(
     [string]$vaultName,
 
     [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the certificate name to export")]
-    [Alias('Role Name')]
+    [Alias('Certificate Name')]
     [ValidateNotNullOrEmpty()]
     [string]$certname,
 
-    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the location to store the certicate in local machine")]
-    [Alias('EmailAddress')]
+    [parameter (Mandatory = $false, ValueFromPipeLine = $True, HelpMessage = "Provide the password for the certificate to use")]
+    [Alias('Password for the PFX certificate file')]
+    [ValidateNotNullOrEmpty()]
+    [string]$certpwd,
+
+
+    [parameter (Mandatory = $false, ValueFromPipeLine = $True, HelpMessage = "Provide the location to store the certicate in local machine")]
+    [Alias('location we want to store the certicate')]
     [ValidateNotNullOrEmpty()]
     [string]$dir
 
@@ -41,6 +47,6 @@ $secretByte = [Convert]::FromBase64String($secretValueText)
 $x509Cert = new-object System.Security.Cryptography.X509Certificates.X509Certificate2
 $x509Cert.Import($secretByte, "", "Exportable,PersistKeySet")
 $type = [System.Security.Cryptography.X509Certificates.X509ContentType]::Pfx
-$pfxFileByte = $x509Cert.Export($type, $password)
+$pfxFileByte = $x509Cert.Export($type, $certpwd)
 
 [System.IO.File]::WriteAllBytes($dir + $cert.Name + '.pfx', $pfxFileByte)
