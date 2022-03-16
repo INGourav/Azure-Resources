@@ -20,13 +20,13 @@ Param(
     [ValidateNotNullOrEmpty()]
     [string]$certname,
 
-    [parameter (Mandatory = $false, ValueFromPipeLine = $True, HelpMessage = "Provide the password for the certificate to use")]
+    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the password for the certificate to use")]
     [Alias('Password for the PFX certificate file')]
     [ValidateNotNullOrEmpty()]
     [string]$certpwd,
 
 
-    [parameter (Mandatory = $false, ValueFromPipeLine = $True, HelpMessage = "Provide the location to store the certicate in local machine")]
+    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the location to store the certicate in local machine")]
     [Alias('location we want to store the certicate')]
     [ValidateNotNullOrEmpty()]
     [string]$dir
