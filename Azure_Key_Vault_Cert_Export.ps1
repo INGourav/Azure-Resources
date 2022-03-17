@@ -37,9 +37,9 @@ $securecertpwd = ConvertTo-SecureString $certpwd -AsPlainText -Force
 foreach ($cer in $certname) {
     Write-Host "Checking status for $cer"
     $cerinfo = Get-AzKeyVaultCertificate -VaultName $vaultName -Name $cer
-    if ($null -eq $cerinfo) {
-        Write-Host "The given certificate $cer does not exist in $vaultname"
-    }
+        if ($null -eq $cerinfo) {
+            Write-Host "The given certificate $cer does not exist in $vaultname"
+        }
     else {
         Write-Output "The given certificate $cer exist in $vaultname, performing further operations for this"
         $secret = Get-AzKeyVaultSecret -VaultName $vaultName -Name $cerinfo.name
