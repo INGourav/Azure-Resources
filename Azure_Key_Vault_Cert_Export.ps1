@@ -10,6 +10,7 @@ How to run,
 Version = 2.0.0
 #>
 
+[CmdletBinding()]
 Param(
     [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the Key Vault Name to export certificate")]
     [Alias('KeyVaultName')]
