@@ -11,6 +11,7 @@ Version = 2.0.0
 #>
 
 [CmdletBinding()]
+
 Param(
     [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the Key Vault Name to export certificate")]
     [Alias('KeyVaultName')]
@@ -35,12 +36,15 @@ Param(
 )
 
 $securecertpwd = ConvertTo-SecureString $certpwd -AsPlainText -Force
+
 foreach ($cer in $certname) {
     Write-Host "Checking status for $cer" -ForegroundColor "Yellow"
     $cerinfo = Get-AzKeyVaultCertificate -VaultName $vaultName -Name $cer
+
         if ($null -eq $cerinfo) {
             Write-Host "The given certificate $cer does not exist in $vaultname" -ForegroundColor "Red"
         }
+
     else {
         Write-Host "The given certificate $cer exist in $vaultname, performing further operations for this" -ForegroundColor "Green"
         $secret = Get-AzKeyVaultSecret -VaultName $vaultName -Name $cerinfo.name
