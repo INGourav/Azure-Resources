@@ -35,13 +35,13 @@ Param(
 
 $securecertpwd = ConvertTo-SecureString $certpwd -AsPlainText -Force
 foreach ($cer in $certname) {
-    Write-Host "Checking status for $cer"
+    Write-Host "Checking status for $cer" -ForegroundColor "Yellow"
     $cerinfo = Get-AzKeyVaultCertificate -VaultName $vaultName -Name $cer
         if ($null -eq $cerinfo) {
-            Write-Host "The given certificate $cer does not exist in $vaultname"
+            Write-Host "The given certificate $cer does not exist in $vaultname" -ForegroundColor "Red"
         }
     else {
-        Write-Output "The given certificate $cer exist in $vaultname, performing further operations for this"
+        Write-Host "The given certificate $cer exist in $vaultname, performing further operations for this" -ForegroundColor "Green"
         $secret = Get-AzKeyVaultSecret -VaultName $vaultName -Name $cerinfo.name
         $secretValueText = '';
         $ssptr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret.SecretValue)
