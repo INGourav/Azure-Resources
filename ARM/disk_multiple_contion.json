@@ -1,0 +1,187 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "diskName": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "sku": {
+            "type": "string"
+        },
+        "diskSizeGb": {
+            "type": "int"
+        },
+        "zone": {
+            "type": "string"
+        },
+        "networkAccessPolicy": {
+            "type": "string",
+            "allowedValues": [
+                "AllowAll",
+                "AllowPrivate"
+            ]
+        },
+        "diskAccessLocation": {
+            "type": "string"
+        },
+        "newdiskaccess": {
+            "type": "string",
+            "allowedValues": [
+                "yes",
+                "no"
+            ]
+        },
+        "diskAccessName": {
+            "type": "string",
+            "metadata": {
+                "description": "this will only be needed when networkAccessPolicy is set to AllowPrivate and newdiskaccess is set to yes"
+            }
+        },
+        "diskAccesses_externalid": {
+            "type": "string",
+            "metadata": {
+                "description": "this will only be needed when networkAccessPolicy is set to AllowPrivate and newdiskaccess is set to no"
+            }
+        },
+        "privateEndpoints_name_nonewdiskaccess": {
+            "type": "String"
+        },
+        "privateEndpoints_name_newdiskaccess": {
+            "type": "string"
+        },
+        "virtualNetworks_id": {
+            "type": "String"
+        }
+        // "privateDnsZones_id": {
+        //     "type": "String"
+        // }
+    },
+    "resources": [
+        {
+            "apiVersion": "2021-04-01",
+            "type": "Microsoft.Compute/disks",
+            "name": "[parameters('diskName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "creationData": {
+                    "createOption": "Empty"
+                },
+                "diskSizeGB": "[parameters('diskSizeGb')]",
+                "networkAccessPolicy": "[parameters('networkAccessPolicy')]",
+                "diskAccessId": "[if(equals(parameters('networkAccessPolicy'),'AllowPrivate'), resourceId('Microsoft.Compute/diskAccesses', parameters('diskAccessName')), json('null'))]"
+                // using if above [if(condition, true value, false value)]
+            },
+            "sku": {
+                "name": "[parameters('sku')]"
+            },
+            "tags": {
+                "createdby": "AzureDemo",
+                "createdwith": "PrivateLink"
+            },
+            "zones": [
+                "[parameters('zone')]"
+            ],
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/diskAccesses', parameters('diskAccessName'))]"
+            ]
+        },
+        {
+            "condition": "[and(equals(parameters('networkAccessPolicy'),'AllowPrivate'), equals(parameters('newdiskaccess'),'yes'))]",
+            "name": "[parameters('diskAccessName')]",
+            "type": "Microsoft.Compute/diskAccesses",
+            "apiVersion": "2020-09-30",
+            "location": "[parameters('diskAccessLocation')]",
+            "properties": {},
+            "tags": {
+                "createdby": "AzureDemo",
+                "createdwith": "PrivateLink"
+            }
+        },
+        {
+           "condition": "[and(equals(parameters('networkAccessPolicy'),'AllowPrivate'), equals(parameters('newdiskaccess'),'yes'))]", 
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2020-11-01",
+            "name": "[parameters('privateEndpoints_name_newdiskaccess')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/diskAccesses', parameters('diskAccessName'))]"
+            ],
+            "location": "centralus",
+            "properties": {
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "[parameters('privateEndpoints_name_newdiskaccess')]",
+                        "properties": {
+                            "privateLinkServiceId": "[resourceId('Microsoft.Compute/diskAccesses', parameters('diskAccessName'))]",
+                            "groupIds": [
+                                "disks"
+                            ],
+                            "privateLinkServiceConnectionState": {
+                                "status": "Approved", 
+                                "description": "Auto-Approved",
+                                "actionsRequired": "None"
+                            }
+                        }
+                    }
+                ],
+                "manualPrivateLinkServiceConnections": [],
+                "subnet": {
+                    "id": "[concat(parameters('virtualNetworks_id'), '/subnets/default')]"
+                },
+                "customDnsConfigs": []
+            }
+        },
+        {
+           "condition": "[and(equals(parameters('networkAccessPolicy'),'AllowPrivate'), equals(parameters('newdiskaccess'),'no'))]", 
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2020-11-01",
+            "name": "[parameters('privateEndpoints_name_nonewdiskaccess')]",
+            "location": "centralus",
+            "properties": {
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "[parameters('privateEndpoints_name_nonewdiskaccess')]",
+                        "properties": {
+                            "privateLinkServiceId": "[parameters('diskAccesses_externalid')]",
+                            "groupIds": [
+                                "disks"
+                            ],
+                            "privateLinkServiceConnectionState": {
+                                "status": "Approved", 
+                                "description": "Auto-Approved",
+                                "actionsRequired": "None"
+                            }
+                        }
+                    }
+                ],
+                "manualPrivateLinkServiceConnections": [],
+                "subnet": {
+                    "id": "[concat(parameters('virtualNetworks_id'), '/subnets/default')]"
+                },
+                "customDnsConfigs": []
+            }
+        }
+        
+         // Place , and uncomment if we want to add private dnz zone 
+        // {
+        //     "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+        //     "apiVersion": "2020-11-01",
+        //     "name": "[concat(parameters('privateEndpoints_name_nonewdiskaccess'), '/default')]",
+        //     "dependsOn": [
+        //         "[resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpoints_name_nonewdiskaccess'))]"
+        //     ],
+        //     "properties": {
+        //         "privateDnsZoneConfigs": [
+        //             {
+        //                 "name": "privatelink-blob-core-windows-net",
+        //                 "properties": {
+        //                     "privateDnsZoneId": "[parameters('privateDnsZones_id')]"
+        //                 }
+        //             }
+        //         ]
+        //     }
+        // }
+    ]
+}
