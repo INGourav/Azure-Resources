@@ -1,0 +1,39 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "diskName": {
+            "value": "disk_23_test"
+        },
+        "location": {
+            "value": "centralus"
+        },
+        "sku": {
+            "value": "Premium_LRS"
+        },
+        "diskSizeGb": {
+            "value": 120
+        },
+        "zone": {
+            "value": "1"
+        },
+        "networkAccessPolicy": {
+            "value": "AllowAll" // either "AllowAll" or "AllowPrivate"
+        },
+        "diskAccessLocation": {
+            "value": "centralus"  // Location of the private link
+        },
+        "diskAccessName": {
+            "value": "disklink_23_test"  // Private link name
+        },
+        "privateEndpoints_disk_name": {
+            "value": "disk"
+        },
+        "virtualNetworks_id": {
+            "value": "/subscriptions/8c3c4444/resourceGroups/azkeyvault/providers/Microsoft.Network/virtualNetworks/linkvnet"  // This should be already deployed in subscription
+        }
+        // "privateDnsZones_id": {
+        //     "value": "/subscriptions/8c3c4444/resourceGroups/azkeyvault/providers/Microsoft.Network/privateDnsZones/privatelink.blob.core.windows.net" // This also needs to be deployed already
+        // }
+    }
+}
