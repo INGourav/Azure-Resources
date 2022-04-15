@@ -2,7 +2,7 @@
 
 Param(
     [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the Key Vault Name to export certificate")]
-    [Alias('keyvaultName')]
+    [Alias('keyvault Name')]
     [ValidateNotNullOrEmpty()]
     [string]$keyvaultname,
 
