@@ -5,9 +5,6 @@
         "functionAppName": {
             "value": "gzdetgdsps01"
         },
-        "storageaccountName": {
-            "value": "gzdetgdsps01sa"
-        },
         "storageAccountType": {
             "value": "Standard_LRS"
         },
@@ -30,7 +27,7 @@
             "value": ""
         },
         "useridentity": {
-            "value": "/subscriptions/8c328a86-ea60-4df6-8a50-bbedfefc4444/resourcegroups/pstest/providers/Microsoft.ManagedIdentity/userAssignedIdentities/pstestuai"
+            "value": "/subscriptions/4444/resourcegroups/pstest/providers/Microsoft.ManagedIdentity/userAssignedIdentities/pstestuai"
         },
         "scriptname": {
             "value": "KeyVaultSecretUsingSAS"
