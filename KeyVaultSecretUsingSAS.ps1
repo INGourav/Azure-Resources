@@ -19,10 +19,15 @@ Param(
     [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the secret name")]
     [Alias('secret name')]
     [ValidateNotNullOrEmpty()]
-    [string]$secretname
+    [string]$secretname,
+
+    [parameter (Mandatory= $True, ValueFromPipeline = $True, HelpMessage = "Provide Subcscription name to set contect")]
+    [Alias('Azure subscription name')]
+    [ValidateNotNullOrEmpty()]
+    [string]$azsub
 
 )
-
+Set-AzContext -Subscription $azsub
 $context = (Get-AzStorageAccount -ResourceGroupName $rg -Name $storageaccount).Context
 $sas = New-AzStorageAccountSASToken -Context $context -Service Blob,File,Table,Queue -ResourceType Service,Container,Object -Permission racwdlup
 $Secret = ConvertTo-SecureString -String $sas -AsPlainText -Force
