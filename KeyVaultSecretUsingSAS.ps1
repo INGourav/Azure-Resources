@@ -38,7 +38,7 @@ begin {
     $NBF =(Get-Date).ToUniversalTime()
     $Tags = @{ "Created By" = "Gourav"; "CostCenter" = "23"}
     $ContentType = "txt" # optional
-    Set-AzkeyvaultnameSecret -VaultName $keyvaultname -Name $secretname -SecretValue $Secret -Expires $Expires -NotBefore $NBF -ContentType $ContentType -Tags $Tags  # we we want to disable the secret while creation use -Disable flag
+    Set-AzkeyvaultSecret -VaultName $keyvaultname -Name $secretname -SecretValue $Secret -Expires $Expires -NotBefore $NBF -ContentType $ContentType -Tags $Tags  # we we want to disable the secret while creation use -Disable flag
     $DeploymentOutputs['Expire'] = $Expires
 }
 
