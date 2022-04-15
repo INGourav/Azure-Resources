@@ -27,7 +27,7 @@ Param(
     [string]$azsub
 
 )
-Connect-AzAccount
+
 Set-AzContext -Subscription $azsub
 $context = (Get-AzStorageAccount -ResourceGroupName $rg -Name $storageaccount).Context
 $sas = New-AzStorageAccountSASToken -Context $context -Service Blob,File,Table,Queue -ResourceType Service,Container,Object -Permission racwdlup
