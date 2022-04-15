@@ -1,7 +1,28 @@
-$rg = "pstest"
-$storageaccount = "pstests"
-$keyvault = "pstestk"
-$secretname = "testpssecret"
+[CmdletBinding()]
+
+Param(
+    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the Key Vault Name to export certificate")]
+    [Alias('KeyVaultName')]
+    [ValidateNotNullOrEmpty()]
+    [string]$keyvault,
+
+    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the ResourceGroup name")]
+    [Alias('RG of Storage account')]
+    [ValidateNotNullOrEmpty()]
+    [string]$rg,
+
+    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the storageaccount name")]
+    [Alias('storageaccount name')]
+    [ValidateNotNullOrEmpty()]
+    [string]$storageaccount,
+
+    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the secret name")]
+    [Alias('secret name')]
+    [ValidateNotNullOrEmpty()]
+    [string]$secretname
+
+)
+
 $context = (Get-AzStorageAccount -ResourceGroupName $rg -Name $storageaccount).Context
 $sas = New-AzStorageAccountSASToken -Context $context -Service Blob,File,Table,Queue -ResourceType Service,Container,Object -Permission racwdlup
 $Secret = ConvertTo-SecureString -String $sas -AsPlainText -Force
