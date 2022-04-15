@@ -2,14 +2,14 @@
 
 Param(
     [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the Key Vault Name to export certificate")]
-    [Alias('KeyVaultName')]
+    [Alias('keyvaultName')]
     [ValidateNotNullOrEmpty()]
-    [string]$keyvault,
+    [string]$keyvaultname,
 
     [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the ResourceGroup name")]
     [Alias('RG of Storage account')]
     [ValidateNotNullOrEmpty()]
-    [string]$rg,
+    [string]$storagerg,
 
     [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the storageaccount name")]
     [Alias('storageaccount name')]
@@ -24,21 +24,21 @@ Param(
     [parameter (Mandatory= $True, ValueFromPipeline = $True, HelpMessage = "Provide Subcscription name to set contect")]
     [Alias('Azure subscription name')]
     [ValidateNotNullOrEmpty()]
-    [string]$azsub
+    [string]$azsubname
 
 )
 begin {
 
     $DeploymentOutputs = @{}
-    Set-AzContext -Subscription $azsub
-    $context = (Get-AzStorageAccount -ResourceGroupName $rg -Name $storageaccount).Context
+    Set-AzContext -Subscription $azsubname
+    $context = (Get-AzStorageAccount -ResourceGroupName $storagerg -Name $storageaccount).Context
     $sas = New-AzStorageAccountSASToken -Context $context -Service Blob,File,Table,Queue -ResourceType Service,Container,Object -Permission racwdlup
     $Secret = ConvertTo-SecureString -String $sas -AsPlainText -Force
     $Expires = (Get-Date).AddYears(2).ToUniversalTime()
     $NBF =(Get-Date).ToUniversalTime()
     $Tags = @{ "Created By" = "Gourav"; "CostCenter" = "23"}
     $ContentType = "txt" # optional
-    Set-AzKeyVaultSecret -VaultName $keyvault -Name $secretname -SecretValue $Secret -Expires $Expires -NotBefore $NBF -ContentType $ContentType -Tags $Tags  # we we want to disable the secret while creation use -Disable flag
+    Set-AzkeyvaultnameSecret -VaultName $keyvaultname -Name $secretname -SecretValue $Secret -Expires $Expires -NotBefore $NBF -ContentType $ContentType -Tags $Tags  # we we want to disable the secret while creation use -Disable flag
     $DeploymentOutputs['Expire'] = $Expires
 }
 
