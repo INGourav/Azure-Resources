@@ -1,0 +1,48 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "keyVaultName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of KeyVault to Store SaS Token"
+            }
+        },
+        "StorageAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of Storage Account"
+            }
+        },
+        "StorageSaSTokenName": {
+            "type": "string",
+            "defaultValue": "SASToken"
+        },
+        "accountSasProperties": {
+            "type": "object",
+            "defaultValue": {
+                "signedServices": "b",
+                "signedPermission": "r",
+                "signedExpiry": "2023-03-01T00:00:01Z",
+                "signedResourceTypes": "o"
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "apiVersion": "2018-02-14",
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(parameters('keyVaultName'), '/', parameters('StorageSaSTokenName'))]",
+            "properties": {
+                "value": "[listAccountSas(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2018-07-01', parameters('accountSasProperties')).accountSasToken]"
+            }
+        }
+    ],
+    "outputs": {
+        "tokenname": {
+            "type": "string",
+            "value": "[parameters('StorageSaSTokenName')]"
+        }
+    }
+}
