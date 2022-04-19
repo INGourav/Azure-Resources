@@ -13,10 +13,10 @@
         },
         "accountSasProperties": {
             "value": {
-                "signedServices": "bfqt",
-                "signedPermission": "rw",
+                "signedServices": "bfqt",     // b-blob, f-file, q-queue, t-table
+                "signedPermission": "rw",     // r-read, w-write, d-delete
                 "signedExpiry": "2023-03-01T00:00:01Z",
-                "signedResourceTypes": "sco"
+                "signedResourceTypes": "sco"  // s-service, c-container, o-object
             }
         }
     }
