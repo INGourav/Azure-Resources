@@ -99,6 +99,7 @@
             "name": "[concat(parameters('keyVaultName'), '/', parameters('StorageSaSTokenName'))]",
             "properties": {
                 "value": "[listAccountSas(parameters('StorageAccountName'), '2018-07-01', parameters('accountSasProperties')).accountSasToken]"
+                // "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2018-07-01').keys[0].value]"  // use already created sas with this line we need not to create a storage account
             }
         }
     ],
