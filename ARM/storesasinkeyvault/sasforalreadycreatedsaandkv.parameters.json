@@ -1,0 +1,23 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "keyVaultName": {
+            "value": "sasarmkv"
+        },
+        "StorageAccountName": {
+            "value": "sasarmsa"
+        },
+        "StorageSaSTokenName":{
+            "value": "storagesasarm05"
+        },
+        "accountSasProperties": {
+            "value": {
+                "signedServices": "bfqt",
+                "signedPermission": "rw",
+                "signedExpiry": "2023-03-01T00:00:01Z",
+                "signedResourceTypes": "sco"
+            }
+        }
+    }
+}
