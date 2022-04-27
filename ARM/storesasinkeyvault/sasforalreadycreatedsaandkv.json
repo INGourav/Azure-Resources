@@ -21,10 +21,13 @@
         "accountSasProperties": {
             "type": "object",
             "defaultValue": {
-                "signedServices": "b",
-                "signedPermission": "r",
+                "signedServices": "b",     // b-blob, f-file, q-queue, t-table
+                "signedPermission": "r",     // r-read, w-write, d-delete
+                "signedStart": "2022-05-24T10:42:03.1567373Z",
                 "signedExpiry": "2023-03-01T00:00:01Z",
-                "signedResourceTypes": "o"
+                "signedResourceTypes": "o",  // s-service, c-container, o-object
+                "signedProtocol": "https",
+                "keyToSign": "key1"
             }
         }
     },
