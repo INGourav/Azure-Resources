@@ -38,7 +38,8 @@
             "type": "Microsoft.KeyVault/vaults/secrets",
             "name": "[concat(parameters('keyVaultName'), '/', parameters('StorageSaSTokenName'))]",
             "properties": {
-                "value": "[listAccountSas(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2018-07-01', parameters('accountSasProperties')).accountSasToken]"
+                // "value": "[listAccountSas(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2018-07-01', parameters('accountSasProperties')).accountSasToken]"  // this will create a sas with given property without ? in starting
+                "value": "[concat('?', listAccountSas(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2018-07-01', parameters('accountSasProperties')).accountSasToken)]"  // this will create ? in the starting in the sas token
             }
         }
     ],
