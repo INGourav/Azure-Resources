@@ -3,20 +3,23 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "keyVaultName": {
-            "value": "sasarmkv"
+            "value": "armgktestrgkv"
         },
         "StorageAccountName": {
-            "value": "sasarmsa"
+            "value": "armgktestrgsa"
         },
         "StorageSaSTokenName":{
-            "value": "storagesasarm05"
+            "value": "armgktestrg04"
         },
         "accountSasProperties": {
             "value": {
                 "signedServices": "bfqt",     // b-blob, f-file, q-queue, t-table
                 "signedPermission": "rw",     // r-read, w-write, d-delete
+                "signedStart": "2021-05-24T10:42:03.1567373Z",
                 "signedExpiry": "2023-03-01T00:00:01Z",
-                "signedResourceTypes": "sco"  // s-service, c-container, o-object
+                "signedResourceTypes": "sco",  // s-service, c-container, o-object
+                "signedProtocol": "https,http",
+                "keyToSign": "key1"
             }
         }
     }
