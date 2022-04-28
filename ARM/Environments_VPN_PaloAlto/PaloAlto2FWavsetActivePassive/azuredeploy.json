@@ -180,7 +180,7 @@
         },
         "licenseType": {
             "type": "string",
-            "defaultValue": "bundle1",
+            "defaultValue": "byol",
             "allowedValues": [
                 "byol",
                 "bundle1",
