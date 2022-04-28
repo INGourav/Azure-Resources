@@ -29,7 +29,7 @@ Reusing an App Service Plan
 Azure AD [Authentication](https://docs.microsoft.com/en-us/azure/app-service/configure-authentication-provider-aad#advanced). 
 To avoid being prompted 'Approval required':
 * Under the App Identity, under Expose an API, under Scope, I set my "Who can consent?" to "Admins and users" (default is "admins")
-* In App Service, under Authentication, Active Directory Authentication, Issuer Url: https://login.microsoft.com/271df5c2-953a-497b-93ad-7adf7a4b3cd7/v2.0
+* In App Service, under Authentication, Active Directory Authentication, Issuer Url: https://login.microsoft.com/XXXXXXXXXXX
 
 ## Contributions
 
