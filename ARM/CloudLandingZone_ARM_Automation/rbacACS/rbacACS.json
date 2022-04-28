@@ -1,0 +1,100 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "principalId": {
+            "type": "string",
+            
+            "metadata": {
+                "description": "The principal to assign the role to"
+            }
+        },
+          "storageName" : {
+          "type" : "string",
+          
+          "metadata" : {
+            "description" : "Name of the Storage Name"
+          }
+        },
+
+     
+          "Tag" : {
+            "type" : "string",
+            "defaultValue" : "azure-cloud-shell",
+            "metadata" : {
+              "description" : "Tag name for the Azure Cloud Shell"
+            }
+          }
+
+          
+
+    },
+    "variables": {
+        
+        "Contributor": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+        "guidUnique": "[uniqueString(resourceGroup().id, deployment().name)]"
+        
+        
+         
+    },
+    "resources": [
+        {
+            "apiVersion": "2019-04-01",
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('storageName')]",
+            "tags" :{
+               "ms-resource-usage" : "[parameters('Tag')]"
+              
+            },
+
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard_ZRS"
+            },
+            "kind": "StorageV2",
+            "properties": {
+               "minimumTlsVersion": "TLS1_2"
+              
+            }
+        },
+         {
+          "name": "[concat(parameters('storageName'), '/default')]",
+         "type":"Microsoft.Storage/storageAccounts/blobServices",
+         "apiVersion":"2018-07-01",
+         "properties":{
+            "deleteRetentionPolicy":{
+               "enabled":true,
+               "days":7
+            }
+         },
+         "dependsOn":[
+            "[concat('Microsoft.Storage/storageAccounts/', parameters('storageName'))]"
+         ]
+      },
+        
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[guid('roleassingnment', variables('guidUnique'))]",
+            "scope": "[concat('Microsoft.Storage/storageAccounts', '/', parameters('storageName'))]",
+            "dependsOn": [
+                "[parameters('storageName')]"
+            ],
+            "properties": {
+                "roleDefinitionId": "[variables('Contributor')]",
+                "principalId": "[parameters('principalId')]"
+            }
+        },
+          {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2018-09-01-preview",
+            "name": "[concat(guid(resourceGroup().id, parameters('storageName')))]",
+            "properties": {
+                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+                
+                "principalId": "[parameters('principalId')]"
+            }
+        }
+        
+    ]
+}

@@ -1,0 +1,156 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+     "contentVersion": "1.0.0.0",
+    "parameters": {
+     "collation": {
+     "type": "string",
+     "metadata": {
+       "description": "The collation of the database."
+     },
+     "defaultValue": "SQL_Latin1_General_CP1_CI_AS"
+   },
+   "APPID" : {
+             "type" : "string",
+             "defaultValue" : "12345",
+             "metadata" : {
+               "description" : "Tag for the AppID"
+             }
+           },
+           "Application Name": {
+             "type" : "string",
+             "defaultValue" : "Infrastructure",
+             "metadata" : {
+               "description" : "Tag for the Application Name"
+             }
+   
+           },
+           "Application Owner" : {
+               "type" : "string",
+               "defaultValue" : "GouravIN",
+                "metadata" : {
+               "description" : "Tag for the Application Owner Email id"
+             }
+             },
+             "Billing Code" : {
+               "type" : "string",
+               "defaultValue" : "12345",
+               "metadata" : {
+                 "description" : "Tag for the Billing Code"
+               }
+             },
+             "Business Function" : {
+               "type" : "string",
+               "defaultValue" : "SharedService",
+               "metadata" : {
+                 "description" : "Tag for the Business Function"
+               }
+             },
+             "Environment Type" : {
+               "type" : "string",
+               "defaultValue" : "DEV",
+               "metadata" : {
+                 "description" : "Environment Type"
+               }
+             },
+   
+   "sqlservername": {
+     "type": "string",
+     "metadata": {
+       "description": "The name of the sql server."
+     }
+   },
+   
+   "databaseName": {
+     "type": "string",
+      "metadata": {
+       "description": "The Database name."
+     }
+     
+   },
+   "edition": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "Basic",
+                "Standard",
+                "Premium",
+                "GeneralPurpose",
+                "BC_Gen5"
+            ],
+            "metadata": {
+                "description": "The DB edition."
+            }
+        }
+    },
+    "functions": [],
+   "variables": {
+         "editionToSkuMap": {
+                            "Basic": {
+                                "family": null,
+                                "name": "Basic",
+                                "tier": "Basic"
+                            },
+                            "Standard": {
+                                "family": null,
+                                "name": "Standard",
+                                "tier": "Standard"
+                            },
+                            "Premium": {
+                                "family": null,
+                                "name": "Premium",
+                                "tier": "Premium"
+                            },
+                            "GeneralPurpose": {
+                                "family": "Gen5",
+                                "name": "GP_Gen5_2",
+                                "tier": "GeneralPurpose"
+                            },
+                            "BC_Gen5": {
+                                "family": "Gen5",
+                                "name": "BC_Gen5",
+                                "tier": "BusinessCritical"
+                            }
+                        },
+                        "skuName": "[variables('editionToSkuMap')[parameters('edition')].name]",
+                        "skuTier": "[variables('editionToSkuMap')[parameters('edition')].tier]",
+                        "skuFamily": "[variables('editionToSkuMap')[parameters('edition')].family]"
+    },
+     "resources": [
+       {
+               "type": "Microsoft.Sql/servers/databases",
+               "apiVersion": "2020-08-01-preview",
+               "name": "[concat(parameters('sqlservername'), '/', parameters('databaseName'))]",
+               "location": "[resourceGroup().location]",
+                "tags" : {
+                       "APPID" : "[parameters('APPID')]",
+                     "Application Name": "[parameters('Application Name')]",
+                   "Application Owner": "[parameters('Application Owner')]",
+                   "Billing Code": "[parameters('Billing Code')]",
+                   "Business Function": "[parameters('Business Function')]",
+                   "Environment Type": "[parameters('Environment Type')]"
+     },
+       "sku": {
+                                "name": "[variables('skuName')]",
+                                "tier": "[variables('skuTier')]",
+                                "family": "[variables('skuFamily')]"
+  },
+        "properties": {
+                   "collation": "[parameters('collation')]",
+      "sourceDatabaseId":"[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',resourceGroup().name,'/providers/Microsoft.Sql/servers/',parameters('sqlservername'))]"
+               },
+                "resources": [
+                                {
+                                    "name": "default",
+                                    "type": "backupLongTermRetentionPolicies",
+                                    "apiVersion": "2020-08-01-preview",
+                                    "properties": {
+                                        "weeklyRetention": "P7W"
+                                    },
+                                    "dependsOn": [
+                                        "[concat('Microsoft.Sql/servers/', parameters('sqlservername'), '/', 'databases', '/', parameters('databaseName'))]"
+                                    ]
+                                }
+                            ]
+           }
+   ]
+   }

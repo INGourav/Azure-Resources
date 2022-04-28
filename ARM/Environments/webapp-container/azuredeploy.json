@@ -1,0 +1,151 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "West US 2",
+            "metadata": {
+                "description": "Not currently available in Canada Central with Windows containers."
+            }
+        },        
+        "windowsFxVersion": {
+            "type": "string",
+            "defaultValue": "DOCKER|mcr.microsoft.com/azure-app-service/samples/aspnethelloworld:latest"
+        },
+        "dockerRegistryUrl": {
+            "type": "string",
+            "defaultValue": "https://mcr.microsoft.com"
+        },
+        "dockerRegistryUsername": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "dockerRegistryPassword": {
+            "type": "securestring",
+            "defaultValue": "nothing"
+        },
+        "dockerRegistryStartupCommand": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
+            }
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+            },
+            "defaultValue": ""
+        }        
+    },
+    "variables": {
+        "resourcePrefix": "[toLower(concat('aks-', take(uniqueString(resourceGroup().id), 6)))]",
+        "prepDeploymentName": "[concat(deployment().name, '-', if(variables('labContextAvailable'), 'echo', 'nolab'))]",
+        "labContextAvailable": "[and(variables('labKeyVaultEnabled'), variables('labSubnetEnabled'))]",
+        "labKeyVaultId": "$(LabKeyVaultId)",
+        "labKeyVaultEnabled": "[startsWith(variables('labKeyVaultId'), subscription().id)]",
+        "labSubnetId": "$(LabSubnetId)",
+        "labSubnetEnabled": "[startsWith(variables('labSubnetId'), subscription().id)]"
+    },    
+    "resources": [
+        {
+            "condition": "[variables('labContextAvailable')]",
+            "apiVersion": "2017-05-10",
+            "name": "[concat(deployment().name, '-echo')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [],
+                    "outputs": {
+                        "keyvaultId": {
+                            "type": "string",
+                            "value": "[variables('labKeyVaultId')]"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[not(variables('labContextAvailable'))]",
+            "apiVersion": "2017-05-10",
+            "name": "[concat(deployment().name, '-nolab')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('_artifactsLocation'), '/azuredeploy.nolab.json', parameters('_artifactsLocationSasToken'))]"
+                },
+                "parameters": {
+                    "name": {
+                        "value": "[variables('resourcePrefix')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2018-11-01",
+            "name": "[concat(variables('resourcePrefix'),'-app')]",
+            "type": "Microsoft.Web/sites",
+            "location": "[parameters('location')]",
+            "tags": {},
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverfarms/', variables('resourcePrefix'))]"
+            ],
+            "properties": {
+                "name": "[variables('resourcePrefix')]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "DOCKER_REGISTRY_SERVER_URL",
+                            "value": "[parameters('dockerRegistryUrl')]"
+                        },
+                        {
+                            "name": "DOCKER_REGISTRY_SERVER_USERNAME",
+                            "value": "[parameters('dockerRegistryUsername')]"
+                        },
+                        {
+                            "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
+                            "value": null
+                        },
+                        {
+                            "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
+                            "value": false
+                        }
+                    ],
+                    "windowsFxVersion": "[parameters('windowsFxVersion')]",
+                    "appCommandLine": "[parameters('dockerRegistryStartupCommand')]",
+                    "alwaysOn": true                },
+                "serverFarmId": "[concat('/subscriptions/', subscription().subscriptionId,'/resourcegroups/', resourceGroup().Id, '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
+                "clientAffinityEnabled": false
+            }
+        },
+        {
+            "apiVersion": "2018-11-01",
+            "name": "[variables('resourcePrefix')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[parameters('location')]",
+            "kind": "windows",
+            "tags": {},
+            "dependsOn": [],
+            "properties": {
+                "name": "[variables('resourcePrefix')]",
+                "workerSize": 0,
+                "workerSizeId": 0,
+                "numberOfWorkers": 1,
+                "hyperV": true
+            },
+            "sku": {
+                "Tier": "PremiumContainer",
+                "Name": "PC2"
+            }
+        }
+    ]
+}

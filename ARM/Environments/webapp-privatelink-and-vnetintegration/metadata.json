@@ -1,0 +1,6 @@
+{
+    "githubUsername": "Cloud_User",
+    "itemDisplayName": "TESTING Web App with Private Endpoint and VNET Integration",
+    "description": "Private Link supports inbound traffic from 'internal networks', VNET Integration is for outbound connectivity to 'internal networks' e.g. another private link or internal Database Server",
+    "summary": "..."
+}

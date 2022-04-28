@@ -1,0 +1,133 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "existingLabName": {
+      "type": "string"
+    },
+    "formulaName":{
+      "type": "string",
+      "defaultValue": "OracleDatabase"
+    },
+    "vmOffer":{
+      "type": "string",
+      "defaultValue": "oracle-database-19-3"
+    },
+    "vmPublisher":{
+      "type": "string",
+      "defaultValue": "oracle"
+    },
+    "vmSku":{
+      "type": "string",
+      "defaultValue": "oracle-db-19300"
+    },
+    "vmSize":{
+      "type": "string",
+      "defaultValue": "Standard_E16s_v3"
+    },
+    "BlobFuse_scriptFileUris": {
+      "type": "string",
+      "defaultValue": "[[\"https://gist.githubusercontent.com/cliveg/d6e7a2209acc185eb51cde5b6c4515d0/raw/blobfuse_rhel.sh\"]"
+    },
+    "BlobFuse_scriptFileArguments":{
+      "type": "string"
+    }
+  },
+  "variables": {
+    "labVirtualNetworkName": "[concat('Dtl', parameters('existingLabName'))]",
+    "labSubnetName": "[concat(variables('labVirtualNetworkName'), 'Subnet')]",
+    "labVirtualNetworkId": "[concat('/virtualnetworks/', variables('labVirtualNetworkName'))]",
+
+    "ostype": "Linux", 
+
+    "repositoryName": "public repo",
+    "artifactsFolder": "artifacts"
+  },
+  "resources": [
+    {
+        "type": "microsoft.devtestlab/labs/formulas",
+        "name": "[concat(parameters('existingLabName'), '/', parameters('formulaName'))]",
+        "location": "[resourceGroup().location]",
+        "apiversion": "2018-10-15-preview",
+        "properties": {
+          "description": "Formula for Oracle Database VM v19.3.0.0.0 Oracle Linux Server 7.7.",
+          "ostype": "[variables('ostype')]",
+          "formulacontent": {
+            "properties": {
+              "size": "[parameters('vmSize')]",
+              "username": "azureuser",
+              "password": "",
+              "storageType": "Premium",              
+              "labsubnetname": "[variables('labSubnetName')]",
+              "labvirtualnetworkid": "[variables('labVirtualNetworkId')]",
+              "dataDiskParameters": [
+                {
+                  "attachNewDataDiskOptions": {
+                    "diskSizeGiB": "1023",
+                    "diskName": "DATA1",
+                    "diskType": "Premium"
+                  },
+                  "hostCaching": "ReadOnly"
+                }
+              ],
+              "artifacts": [
+                {
+                  "artifactid": "[concat('/artifactsources/', variables('repositoryName'), '/', variables('artifactsFolder'), '/linux-yum-package')]",
+                    "parameters": [
+                        {
+                            "name": "packages",
+                            "value": "python3-pip"
+                        }
+                    ]
+                },
+                {
+                  "artifactid": "[concat('/artifactsources/', variables('repositoryName'), '/', variables('artifactsFolder'), '/linux-run-bash')]",
+                  "parameters": [
+                        {
+                            "name": "scriptFileUris",
+                            "value": "[parameters('BlobFuse_scriptFileUris')]"
+                        },
+                        {
+                            "name": "scriptToRun",
+                            "value": "blobfuse_rhel.sh"
+                        },
+                        {
+                            "name": "scriptArguments",
+                            "value": "[parameters('BlobFuse_scriptFileArguments')]"
+                        },
+                        {
+                            "name": "skipDos2Unix",
+                            "value": true
+                        }
+                    ]
+                },
+                {
+                  "artifactid": "[concat('/artifactsources/', variables('repositoryName'), '/', variables('artifactsFolder'), '/linux-yum-package')]",
+                    "parameters": [
+                        {
+                            "name": "packages",
+                            "value": "lvm2 blobfuse"
+                        }
+                    ]
+                }
+
+              ],
+              "galleryimagereference": {
+                "offer": "[parameters('vmOffer')]",
+                "publisher": "[parameters('vmPublisher')]",
+                "sku": "[parameters('vmSku')]",
+                "ostype": "[variables('ostype')]",
+                "version": "latest"
+              }
+            }
+          }
+        }
+      }
+    ],   
+  "outputs": {
+    "formulaId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.DevTestLab/labs/formulas', parameters('existingLabName'), parameters('formulaName'))]"
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "webAppName": {
+            "type": "string",
+            
+            "metadata": {
+                "description": "Web app name."
+            },
+            "minLength": 2
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "Canada Central",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        },
+        "sku": {
+            "type": "string",
+            "defaultValue": "F1",
+            "metadata": {
+                "description": "The SKU of App Service Plan."
+            }
+        },
+        "language": {
+            "type": "string",
+            "defaultValue": ".net",
+            "allowedValues": [
+                ".net",
+                "php",
+                "node",
+                "html"
+            ],
+            "metadata": {
+                "description": "The language stack of the app."
+            }
+        }
+    },
+    "variables": {
+        "appServicePlanPortalName": "[concat('AppServicePlan-', parameters('webAppName'))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2020-06-01",
+            "type": "Microsoft.Web/serverfarms",
+            "tags" :{
+                "APPID": "APPID0010653",
+                "Application Name": "Infrastructure",
+                "Application Owner": "GouravIN",
+                "Billing Code": "12345",
+                "Business Function": "SharedService",
+                "Environment Type": "DEV-Test"
+      },
+            "name": "[variables('appServicePlanPortalName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "[parameters('sku')]"
+            }
+        },
+        {
+            "apiVersion": "2020-06-01",
+            "type": "Microsoft.Web/sites",
+            "name": "[parameters('webAppName')]",
+            "tags" :{
+                  "Application Name": "Infrastructure",
+                "Application Owner": "GouravIN",
+                "Billing Code": "12345",
+                "Business Function": "SharedService",
+                "Environment Type": "DEV-Test"
+      },
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanPortalName'))]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanPortalName'))]"
+            }
+           
+        }
+    ]
+}

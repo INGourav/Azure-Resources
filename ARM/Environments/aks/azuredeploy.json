@@ -1,0 +1,144 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "privateCluster": {
+            "type": "bool",
+            "defaultValue": "false",
+            "metadata": {
+                "description": "Whether the AKS API server endpoint should have a private IP or public IP address"
+            }            
+        },
+        "maxPods": {
+            "type": "int",
+            "defaultValue": 15,
+            "metadata": {
+                "description": "Min=10, AKS default=30, Max=250, there are ~5 for AKS itself"
+            }            
+        },        
+        "vnetResourceGroupName": {
+            "type": "string",
+            "metadata": {
+                "description": "vnetResourceGroupName"
+            },
+            "defaultValue": "rg-network-dtl"
+        },
+        "vnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "vnetName"
+            },
+            "defaultValue": "vnet-dtl"            
+        },
+        "vnetSubnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "vnetSubnetName"
+            },
+            "defaultValue": "snet-dtl-aks"            
+        },        
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
+            }
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+            },
+            "defaultValue": ""
+        }
+    },
+    "variables": {
+        "resourcePrefix": "[toLower(concat('aks-', take(uniqueString(resourceGroup().id), 6)))]",
+        "prepDeploymentName": "[concat(deployment().name, '-', if(variables('labContextAvailable'), 'echo', 'nolab'))]",
+        "labContextAvailable": "[and(variables('labKeyVaultEnabled'), variables('labSubnetEnabled'))]",
+        "labKeyVaultId": "$(LabKeyVaultId)",
+        "labKeyVaultEnabled": "[startsWith(variables('labKeyVaultId'), subscription().id)]",
+        "labSubnetId": "$(LabSubnetId)",
+        "labSubnetEnabled": "[startsWith(variables('labSubnetId'), subscription().id)]"
+    },
+    "resources": [
+        {
+            "condition": "[variables('labContextAvailable')]",
+            "apiVersion": "2017-05-10",
+            "name": "[concat(deployment().name, '-echo')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [],
+                    "outputs": {
+                        "keyvaultId": {
+                            "type": "string",
+                            "value": "[variables('labKeyVaultId')]"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[not(variables('labContextAvailable'))]",
+            "apiVersion": "2017-05-10",
+            "name": "[concat(deployment().name, '-nolab')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('_artifactsLocation'), '/azuredeploy.nolab.json', parameters('_artifactsLocationSasToken'))]"
+                },
+                "parameters": {
+                    "name": {
+                        "value": "[variables('resourcePrefix')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "[concat(deployment().name, '-service')]",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', variables('prepDeploymentName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('_artifactsLocation'), '/azuredeploy.service.json', parameters('_artifactsLocationSasToken'))]"
+                },
+                "parameters": {
+                    "name": {
+                        "value": "[variables('resourcePrefix')]"
+                    },
+                    "vnetResourceGroupName": {
+                        "value": "[parameters('vnetResourceGroupName')]"
+                    },
+                    "vnetName": {
+                        "value": "[parameters('vnetName')]"
+                    },
+                    "vnetSubnetName": {
+                        "value": "[parameters('vnetSubnetName')]"
+                    },
+                    "privateCluster":  {
+                        "value": "[parameters('privateCluster')]"
+                    },
+                    "maxPods":  {
+                        "value": "[parameters('maxPods')]"
+                    },                    
+                    "_artifactsLocation": {
+                        "value": "[parameters('_artifactsLocation')]"
+                    },
+                    "_artifactsLocationSasToken": {
+                        "value": "[parameters('_artifactsLocationSasToken')]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+    }
+}

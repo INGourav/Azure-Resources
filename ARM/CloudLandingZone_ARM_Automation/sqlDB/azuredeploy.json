@@ -1,0 +1,472 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+      
+       "serverName": {
+        "type": "string",
+        "metadata": {
+          "description": "The name of the SQL logical server."
+        }
+      },
+      "adminLogin": {
+            "type": "string",
+            "metadata": {
+                "description": "The User Name fo the SQL server "
+            }
+        },
+        "sqlDBName" : {
+            "type" : "string",
+            "metadata" : {
+            "description" : "The Database name for the SQL server"
+          }
+          },
+              "edition": {
+        "type": "string",
+        "defaultValue": "Standard",
+        "allowedValues": [
+          "Basic",
+          "Standard",
+          "Premium",
+          "GeneralPurpose",
+          "BC_Gen5"
+        ],
+        "metadata": {
+          "description": "The DB edition."
+        }
+      },
+        "databaseCollation": {
+        "type": "string",
+        "defaultValue": "SQL_Latin1_General_CP1_CI_AS",
+        "metadata": {
+          "description": "The SQL Database collation."
+        }
+      },
+      "APPID" : {
+          "type" : "string",
+          "defaultValue" : "12345",
+          "metadata" : {
+            "description" : "Tag for the AppID"
+          }
+        },
+        "Application Name": {
+          "type" : "string",
+          "defaultValue" : "Infrastructure",
+          "metadata" : {
+            "description" : "Tag for the Applicaiton Name"
+          }
+
+        },
+        "Application Owner" : {
+            "type" : "string",
+            "defaultValue" : "GouravIN",
+             "metadata" : {
+            "description" : "Tag for the Application Owner Email id"
+          }
+          },
+          
+          "Billing Code" : {
+            "type" : "string",
+            "defaultValue" : "12345",
+            "metadata" : {
+              "description" : "Tag for the Billing Code"
+            }
+          },
+          "Business Function" : {
+            "type" : "string",
+            "defaultValue" : "SharedService",
+            "metadata" : {
+              "description" : "Tag for the Business Function"
+            }
+          },
+          "Environment Type" : {
+            "type" : "string",
+            "defaultValue" : "DEV",
+            "metadata" : {
+              "description" : "Environment Type"
+            }
+          },
+            "vaultResourceGroupName": {
+        "type": "string",
+        "metadata": {
+          "description": "The name of the resource group that contains the keyvault."
+        }
+      },
+      
+      "vaultName": {
+        "type": "string",
+        "metadata": {
+          "description": "The name of the keyvault that contains the secret."
+        }
+      },
+      
+      "secretName": {
+        "type": "string",
+        "metadata": {
+          "description": "The name of the secret."
+        }
+      },
+      
+          "ActiveDirectorySecurityGroupID": {
+          "type" : "string",
+           
+          "metadata" : {
+              "description" : "Object ID for the security group in Azure AD"
+          }
+      },
+      "ActiveDirectorySecurityName" :{
+        "type" : "string",
+       
+        "metadata" : {
+          "description" : "Security Group Name in Azure Active Directory"
+        }
+      },
+        "ExistingVnetResourceGroupName": {
+            "allowedValues" : ["rg-network-dev","rg-network-uat","rg-network-prod"],
+            "type": "String",
+            "metadata": {
+                "description": "Name of the existing Resource group name."
+            }
+        },
+      
+      "ExistingVirtualNetworkName": {
+            "allowedValues" : ["vnet-dev","vnet-uat","vnet-prod"],
+            "type": "String",
+            "metadata": {
+                "description": "The name of the Existing virtual network"
+            }
+        },
+         "existingSubnetName": {
+            "type": "String",
+            "allowedValues" : ["snet-dev-db","snet-uat-db","snet-prod-db"],
+            "metadata": {
+                "description": "The name of an existing subnet"
+            }
+        },
+     
+       "endPointName" :{
+        "type" : "string",
+        "defaultValue" : "myprivatelink",
+        "metadata" : {
+            "description" : "Private End Point name"
+        }
+      }
+       
+    
+  
+  },
+  "variables": {
+       
+  },
+
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "singleDBDeployment",
+      "properties": {
+        "mode": "Incremental",
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "adminLogin": {
+              "type": "securestring"
+            },
+            "adminPassword": {
+              "type": "securestring"
+            },
+             "ActiveDirectorySecurityGroupID": {
+            "type" : "string"    
+              },
+            "ActiveDirectorySecurityName" :{
+              "type" : "string"
+            },
+             "APPID" :{
+              "type" : "string"
+            },
+             "Application Name" :{
+              "type" : "string"
+            },
+             "sqlDBName" :{
+              "type" : "string"
+            },
+             "Billing Code" :{
+              "type" : "string"
+            },
+             "Environment Type" :{
+              "type" : "string"
+            },
+             "Application Owner" :{
+              "type" : "string"
+            },
+             "Business Function" :{
+              "type" : "string"
+            },
+             "endPointName" :{
+              "type" : "string"
+            },
+            "serverName" :{
+              "type" : "string"
+            },
+            "existingSubnetName" : {
+              "type" : "string"
+            },
+            "ExistingVnetResourceGroupName": {
+              "type" : "string"
+            },
+            "ExistingVirtualNetworkName" : {
+              "type": "string"
+            },
+            "edition" : {
+              "type" : "string"
+            },
+            "databaseCollation": {
+              "type" : "string"
+            }
+            
+          },
+          "variables": {
+            
+            "ActiveDirectorytenantID": "XXXXXXXXXXXXXXXXXXXXXX",
+            "subnetRef": "[concat(variables('vnetreference'), '/subnets/', parameters('existingSubnetName'))]",
+            "vnetreference": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('ExistingVnetResourceGroupName'), '/providers/Microsoft.Network/virtualNetworks/', parameters('ExistingVirtualNetworkName'))]",
+            "dnsID" : "/subscriptions/XXXXXXXXXXXXXXXXXX/resourceGroups/XXXXXXXXXXXXXXXXX/providers/Microsoft.Network/privateDnsZones/privatelink.database.windows.net",
+            "pvtendpointdnsgroupname": "[concat(parameters('EndpointName'),'/mydnsgroupname')]",
+            "editionToSkuMap": {
+        "Basic": {
+          "family": null,
+          "name": "Basic",
+          "tier": "Basic"
+        },
+        "Standard": {
+          "family": null,
+          "name": "Standard",
+          "tier": "Standard"
+        },
+        "Premium":  {
+          "family": null,
+          "name": "Premium",
+          "tier": "Premium"
+        },
+        "GeneralPurpose": {
+          "family": "Gen5",
+          "name": "GP_Gen5_2",
+          "tier": "GeneralPurpose"
+        },
+        "BC_Gen5": {
+            "family": "Gen5",
+            "name": "BC_Gen5",
+            "tier": "BusinessCritical"
+        }
+        },
+           "skuName": "[variables('editionToSkuMap')[parameters('edition')].name]",
+      "skuTier": "[variables('editionToSkuMap')[parameters('edition')].tier]",
+      "skuFamily": "[variables('editionToSkuMap')[parameters('edition')].family]"  
+             
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Sql/servers",
+              "apiVersion": "2018-06-01-preview",
+              "name": "[parameters('serverName')]",
+              "location": "[resourceGroup().location]",
+              "tags" :{
+                  "APPID" : "[parameters('APPID')]",
+                  "Application Name": "[parameters('Application Name')]",
+                "Application Owner": "[parameters('Application Owner')]",
+                "Billing Code": "[parameters('Billing Code')]",
+                "Business Function": "[parameters('Business Function')]",
+                "Environment Type": "[parameters('Environment Type')]"
+                  
+        },
+              "properties": {
+                "administratorLogin": "[parameters('adminLogin')]",
+                "administratorLoginPassword": "[parameters('adminPassword')]"
+              },
+              "resources" : [  
+            {
+              
+              "type": "databases",
+              "name": "[parameters('sqlDBName')]",
+              "apiVersion": "2017-10-01-preview",
+              "location": "[resourceGroup().location]",
+              "tags": {
+                 "APPID" : "[parameters('APPID')]",
+                  "Application Name": "[parameters('Application Name')]",
+                "Application Owner": "[parameters('Application Owner')]",
+                "Billing Code": "[parameters('Billing Code')]",
+                "Business Function": "[parameters('Business Function')]",
+                "Environment Type": "[parameters('Environment Type')]"
+              },
+              "sku": {
+                "name": "[variables('skuName')]",
+            "tier": "[variables('skuTier')]",
+            "family": "[variables('skuFamily')]"
+              },
+            "properties": {
+          "perDatabaseSettings": {
+          "collation": "[parameters('databaseCollation')]"
+          }
+        },
+        "dependsOn": [
+              "[resourceId('Microsoft.Sql/servers', concat(parameters('serverName')))]"
+            ],
+             "resources" : [
+              {
+              "name": "default",
+              "type": "backupLongTermRetentionPolicies",
+              "apiVersion": "2020-08-01-preview",
+              "properties": {
+                "weeklyRetention": "P7W"
+              },
+              "dependsOn": [
+              "[concat('Microsoft.Sql/servers/', parameters('serverName'), '/', 'databases', '/', parameters('sqlDBName'))]"
+              
+            ]
+              
+              }
+            ]
+            }
+          ]
+},
+            {
+              
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2020-05-01",
+              "name": "[parameters('endPointName')]",
+              "location": "[resourceGroup().location]",
+              "dependsOn": [
+                  "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]"
+              ],
+              "properties": {
+                  "subnet": {
+                      "id": "[variables('subnetRef')]"
+                  },
+                  "privateLinkServiceConnections": [
+                      {
+                          "name": "[parameters('endPointName')]",
+                          "properties": {
+                              "privateLinkServiceId": "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]",
+                              "groupIds": [
+                                  "sqlServer"
+                              ]
+                              
+                          }
+                      }
+                  ]
+              } 
+          },
+             {
+                "name": "[concat(parameters('serverName'),'/ActiveDirectory')]",
+                "type": "Microsoft.Sql/servers/administrators",
+                "dependsOn": [
+                  "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]"
+                ],
+                "apiVersion": "2019-06-01-preview",
+                "properties": {
+                  "administratorType": "ActiveDirectory",
+                  "login": "[parameters('ActiveDirectorySecurityName')]",
+                  "sid": "[parameters('ActiveDirectorySecurityGroupID')]",
+                  "tenantId": "[variables('ActiveDirectorytenantID')]"
+      }
+    },
+     {
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2020-06-01",
+      "name": "[variables('pvtendpointdnsgroupname')]",
+      "location": "[resourceGroup().id]",
+      "dependsOn": [
+        "[parameters('EndpointName')]",
+        "[resourceId('Microsoft.Sql/servers', concat(parameters('serverName')))]"
+      ],
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "config1",
+            "properties": {
+              "privateDnsZoneId": "[variables('dnsID')]"
+            }
+          }
+        ]
+      }
+    } 
+    
+          ]
+        },
+        
+        "parameters": {
+         
+          "adminLogin": {
+                        "value": "[parameters('adminLogin')]"
+                    },
+          "adminPassword": {
+            "reference": {
+              "keyVault": {
+                "id":  "[resourceId(subscription().subscriptionId, parameters('vaultResourceGroupName'), 'Microsoft.KeyVault/vaults', parameters('vaultName'))]"
+              },
+              "secretName": "[parameters('secretName')]"
+            }
+          },
+          
+          "ActiveDirectorySecurityGroupID" : {
+            "value" : "[parameters('ActiveDirectorySecurityGroupID')]"
+          },
+         
+          "ActiveDirectorySecurityName": {
+              "value": "[parameters('ActiveDirectorySecurityName')]"
+          },
+          "APPID" : {
+            "value": "[parameters('APPID')]"
+          },
+          "Application Name" : {
+            "value" : "[parameters('Application Name')]"
+          },
+          "Application Owner" : {
+            "value" : "[parameters('Application Owner')]"
+          },
+          "Billing Code" : {
+            "value" : "[parameters('Billing Code')]"
+          },
+          "Business Function" : {
+            "value" : "[parameters('Business Function')]"
+          },
+          "Environment Type" : {
+            "value" : "[parameters('Environment Type')]"
+          },
+          "edition": {
+              "value": "[parameters('edition')]"
+          },
+           "sqlDBName": {
+              "value": "[parameters('sqlDBName')]"
+          },
+       
+          "serverName": {
+              "value": "[parameters('serverName')]"
+          },
+          "endPointName": {
+              "value": "[parameters('endPointName')]"
+          },
+          "existingSubnetName": {
+              "value": "[parameters('existingSubnetName')]"
+          },
+          "ExistingVirtualNetworkName": {
+              "value": "[parameters('ExistingVirtualNetworkName')]"
+          },
+          "ExistingVnetResourceGroupName": {
+              "value": "[parameters('ExistingVnetResourceGroupName')]"
+          },
+          "databaseCollation" : {
+            "value" : "[parameters('databaseCollation')]"
+          }
+       
+         
+        }
+      }
+    }
+  ]
+ 
+}

@@ -1,0 +1,95 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "existingLabName": {
+      "type": "string"
+    },
+    "formulaName":{
+      "type": "string",
+      "defaultValue": "DockerVM"
+    },
+    "vmOffer":{
+      "type": "string",
+      "defaultValue": "visualstudio2019latest"
+    },
+    "vmPublisher":{
+      "type": "string",
+      "defaultValue": "microsoftvisualstudio"
+    },
+    "vmSku":{
+      "type": "string",
+      "defaultValue": "vs-2019-ent-latest-win10-n"
+    },
+    "vmSize":{
+      "type": "string",
+      "defaultValue": "Standard_E2ds_v4"
+    }
+  },
+  "variables": {
+    "labVirtualNetworkName": "[concat('Dtl', parameters('existingLabName'))]",
+    "labSubnetName": "[concat(variables('labVirtualNetworkName'), 'Subnet')]",
+    "labVirtualNetworkId": "[concat('/virtualnetworks/', variables('labVirtualNetworkName'))]",
+    "ostype": "Windows", 
+    "repositoryName": "public repo",
+    "repositoryNamePrivate": "Cloud-Team",
+    "artifactsFolder": "artifacts"
+  },
+  "resources": [
+    {
+        "type": "microsoft.devtestlab/labs/formulas",
+        "name": "[concat(parameters('existingLabName'), '/', parameters('formulaName'))]",
+        "location": "[resourceGroup().location]",
+        "apiversion": "2018-10-15-preview",
+        "properties": {
+          "description": "Visual Studio 2019 Enterprise (latest release) on Windows 10 Enterprise N (x64) with Docker Desktop",
+          "ostype": "[variables('ostype')]",
+          "formulacontent": {
+            "properties": {
+              "size": "[parameters('vmSize')]",
+              "username": "azureuser",
+              "password": "",
+              "storageType": "Premium",              
+              "labsubnetname": "[variables('labSubnetName')]",
+              "labvirtualnetworkid": "[variables('labVirtualNetworkId')]",              
+              "artifacts": [
+                {
+                    "artifactId": "[concat('/artifactsources/', variables('repositoryNamePrivate'), '/', variables('artifactsFolder'), '/DockerDesktop')]"
+                },
+                {
+                  "artifactId": "[concat('/artifactsources/', variables('repositoryName'), '/', variables('artifactsFolder'), '/windows-chocolatey')]",
+                  "parameters": [
+                    {
+                      "name": "packages",
+                      "value": "wsl2"
+                    },
+                    {
+                      "name": "allowEmptyChecksums",
+                      "value": "true"
+                    },
+                    {
+                      "name": "ignoreChecksums",
+                      "value": "false"
+                    }
+                  ]
+                }                
+              ],
+              "galleryimagereference": {
+                "offer": "[parameters('vmOffer')]",
+                "publisher": "[parameters('vmPublisher')]",
+                "sku": "[parameters('vmSku')]",
+                "ostype": "[variables('ostype')]",
+                "version": "latest"
+              }
+            }
+          }
+        }
+      }
+    ],   
+  "outputs": {
+    "formulaId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.DevTestLab/labs/formulas', parameters('existingLabName'), parameters('formulaName'))]"
+    }
+  }
+}

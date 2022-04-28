@@ -1,0 +1,95 @@
+{
+ "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+ "parameters": {
+  "collation": {
+  "type": "string",
+  "metadata": {
+    "description": "The collation of the database."
+  },
+  "defaultValue": "SQL_Latin1_General_CP1_CI_AS"
+},
+"APPID" : {
+          "type" : "string",
+          "defaultValue" : "12345",
+          "metadata" : {
+            "description" : "Tag for the AppID"
+          }
+        },
+        "Application Name": {
+          "type" : "string",
+          "defaultValue" : "Infrastructure",
+          "metadata" : {
+            "description" : "Tag for the Applicaiton Name"
+          }
+
+        },
+        "Application Owner" : {
+            "type" : "string",
+            "defaultValue" : "GouravIN",
+             "metadata" : {
+            "description" : "Tag Nfor the Applicaiton Owner Email id"
+          }
+          },
+          "Billing Code" : {
+            "type" : "string",
+            "defaultValue" : "12345",
+            "metadata" : {
+              "description" : "Tag for the Billing Code"
+            }
+          },
+          "Business Function" : {
+            "type" : "string",
+            "defaultValue" : "SharedService",
+            "metadata" : {
+              "description" : "Tag for the Business Function"
+            }
+          },
+          "Environment Type" : {
+            "type" : "string",
+            "defaultValue" : "DEV",
+            "metadata" : {
+              "description" : "Environment Type"
+            }
+          },
+
+"sqlservername": {
+  "type": "string",
+  "metadata": {
+    "description": "The name of the sql server."
+  }
+},
+
+"sqlElasticPoolName": {
+  "type": "string",
+  "metadata": {
+    "description": "The Elastic Pool name."
+  }
+},
+"databaseName": {
+  "type": "string"
+}
+ },
+ "functions": [],
+"variables": { },
+  "resources": [
+    {
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2020-08-01-preview",
+            "name": "[concat(parameters('sqlservername'), '/', parameters('databaseName'))]",
+            "location": "[resourceGroup().location]",
+             "tags" : {
+                    "APPID" : "[parameters('APPID')]",
+                  "Application Name": "[parameters('Application Name')]",
+                "Application Owner": "[parameters('Application Owner')]",
+                "Billing Code": "[parameters('Billing Code')]",
+                "Business Function": "[parameters('Business Function')]",
+                "Environment Type": "[parameters('Environment Type')]"
+  },
+     "properties": {
+                "collation": "[parameters('collation')]",
+   "elasticPoolId":"[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',resourceGroup().name,'/providers/Microsoft.Sql/servers/',parameters('sqlservername'),'/elasticPools/',parameters('sqlElasticPoolName'))]"
+            }
+        }
+]
+}

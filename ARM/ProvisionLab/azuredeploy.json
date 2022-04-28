@@ -1,0 +1,464 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "newLabName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the new lab instance to be created."
+            }
+        },
+        "CuratedMarketplace": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Show a curated list of Marketplace Images."
+            }
+        },
+        "labVmShutDownTime": {
+            "type": "string",
+            "defaultValue": "18:00",
+            "minLength": 4,
+            "maxLength": 5,
+            "metadata": {
+                "description": "The time (relative to timeZoneId) at which the Lab VMs will be automatically shutdown (E.g. 17:30, 20:00, 09:00)."
+            }
+        },
+        "timeZoneId": {
+            "type": "string",
+            "defaultValue": "Mountain Standard Time",
+            "minLength": 3,
+            "metadata": {
+                "description": "The Windows time zone id associated with labVmShutDownTime (E.g. UTC, Pacific Standard Time, Central Europe Standard Time)."
+            }
+        },
+        "allowedVmSizes": {
+            "type": "string",
+            "defaultValue": "\"Standard_B1ls\",\"Standard_B1ms\",\"Standard_B1s\",\"Standard_B2ms\",\"Standard_B2s\",\"Standard_B4ms\",\"Standard_D16ds_v4\",\"Standard_D16s_v3\",\"Standard_D2ds_v4\",\"Standard_D2s_v3\",\"Standard_D32ds_v4\",\"Standard_D32s_v3\",\"Standard_D48ds_v4\",\"Standard_D48s_v3\",\"Standard_D4ds_v4\",\"Standard_D4s_v3\",\"Standard_D64ds_v4\",\"Standard_D64s_v3\",\"Standard_D8ds_v4\",\"Standard_D8s_v3\",\"Standard_E16ds_v4\",\"Standard_E16s_v3\",\"Standard_E20ds_v4\",\"Standard_E20s_v3\",\"Standard_E2ds_v4\",\"Standard_E2s_v3\",\"Standard_E32ds_v4\",\"Standard_E32s_v3\",\"Standard_E48s_v3\",\"Standard_E4ds_v4\",\"Standard_E4s_v3\",\"Standard_E64ds_v4\",\"Standard_E64s_v3\",\"Standard_E8ds_v4\",\"Standard_E8s_v3\",\"Standard_M128ms\",\"Standard_M16ms\",\"Standard_M32ms\",\"Standard_M64ms\",\"Standard_M8ms\"",
+            "minLength": 3,
+            "metadata": {
+                "description": "A comma-separated list of VM sizes that are allowed in the lab."
+            }
+        },
+        "newLabVirtualNetworkName": {
+            "type": "string",
+            "defaultValue": "vnet-dtl",
+            "metadata": {
+                "description": "The name of the new lab virtual network instance to be created with the new lab instance being created."
+            }
+        },
+        "vnetResourceGroupName": {
+            "type": "string",
+            "defaultValue": "rg-network-dtl",
+            "metadata": {
+                "description": "use for AKS rbac."
+            }
+        },
+        "existingVirtualNetworkId": {
+            "type": "string",
+            "defaultValue": "/subscriptions/XXXXXXXXXXXXX/resourceGroups/rg-network-dtl/providers/Microsoft.Network/virtualNetworks/vnet-dtl",
+            "metadata": {
+                "description": "The resource ID pointing to an existing (compute) virtual network to be referenced by the new lab virtual network instance being created."
+            }
+        },
+        "existingSubnetName": {
+            "type": "string",
+            "defaultValue": "snet-dtl-apps",
+            "metadata": {
+                "description": "The name of an existing (compute) subnet instance to be configured for Lab VM creation."
+            }
+        },
+        "announcementTitle": {
+            "type": "string",
+            "defaultValue": "Important Information"
+        },
+        "announcementMarkdown": {
+            "type": "string",
+            "defaultValue": "# Important Information for All Lab Users\nFor more information how to use Azure Lab Service read online [documentation](https://docs.microsoft.com/en-us/azure/lab-services/)."
+        },
+        "announcementExpiration": {
+            "type": "string",
+            "defaultValue": "2100-01-01T17:00:00+00:00"
+        },
+        "supportMessageMarkdown": {
+            "type": "string",
+            "defaultValue": "Welcome to the lab!  \n[My support link](http://microsoft.com) [Documentation](https://docs.microsoft.com/en-us/azure/lab-services/)"
+        },
+        "costThreshold": {
+            "type": "string",
+            "defaultValue": "5000"
+        },
+        
+        "vaultResourceGroupName": {
+            "type": "string",
+            "defaultValue": "rg-shared-dtl"
+        },
+        "vaultName": {
+            "type": "string",
+            "defaultValue": "dtlsharedcac"
+        },
+        "artifactRepositoryDisplayName": {
+            "type": "string",
+            "defaultValue": "Cloud Team Repository"
+        },
+        "artifactRepoUri": {
+            "type": "string",
+            "defaultValue": "https://Test-Developer-Services@dev.azure.com/Test-Developer-Services/Cloud_DevOps/_git/Cloud_DevOps"
+        },
+        "artifactRepoBranch": {
+            "type": "string",
+            "defaultValue": "master"
+        },
+        "artifactRepoFolder": {
+            "type": "string",
+            "defaultValue": "/Artifacts"
+        },
+        "artifactTemplateFolder": {
+            "type": "string",
+            "defaultValue": "/Environments"
+        },
+        "artifactRepoType": {
+            "type": "string",
+            "allowedValues": [ "VsoGit", "GitHub" ],
+            "defaultValue": "VsoGit"
+        }
+    },
+    "variables": {
+        "apiVersion": {
+            "aks": "2020-04-01",
+            "rbac": "2020-04-01-preview",
+            "deployments": "2020-06-01",
+            "dtl": "2018-10-15-preview"
+        },
+        "existingSubnetId": "[concat(parameters('existingVirtualNetworkId'), '/subnets/', parameters('existingSubnetName'))]",
+        "managedIdentityName": "[concat(parameters('newLabName'),'-mi')]",
+        "artifactRepositoryName": "Cloud-Team",
+        "allowedImages": "\"{\\\"offer\\\":\\\"arcgis-desktop\\\",\\\"publisher\\\":\\\"esri\\\",\\\"sku\\\":\\\"desktop-byol-106\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"dsvm-win-2019\\\",\\\"publisher\\\":\\\"microsoft-dsvm\\\",\\\"sku\\\":\\\"server-2019\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2016SP1-WS2016\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"SQLDEV\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2016SP2-WS2016\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"SQLDEV\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2019-rhel7\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"SQLDEV\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2019-RHEL7\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"SQLDEV\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2017-RHEL7\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"SQLDEV\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2017-WS2016\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"SQLDEV\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"WindowsServerHPCPack\\\",\\\"publisher\\\":\\\"MicrosoftWindowsServerHPCPack\\\",\\\"sku\\\":\\\"2012R2\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"WindowsServerHPCPack\\\",\\\"publisher\\\":\\\"MicrosoftWindowsServerHPCPack\\\",\\\"sku\\\":\\\"2019hn-ws2016\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"WindowsServerHPCPack\\\",\\\"publisher\\\":\\\"MicrosoftWindowsServerHPCPack\\\",\\\"sku\\\":\\\"2019hn-ws2019\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"MicrosoftSharePointServer\\\",\\\"publisher\\\":\\\"MicrosoftSharePoint\\\",\\\"sku\\\":\\\"sp2013\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"MicrosoftSharePointServer\\\",\\\"publisher\\\":\\\"MicrosoftSharePoint\\\",\\\"sku\\\":\\\"sp2016\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"MicrosoftSharePointServer\\\",\\\"publisher\\\":\\\"MicrosoftSharePoint\\\",\\\"sku\\\":\\\"sp2019\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"office-365\\\",\\\"publisher\\\":\\\"microsoftwindowsdesktop\\\",\\\"sku\\\":\\\"1903-evd-o365pp\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"office-365\\\",\\\"publisher\\\":\\\"microsoftwindowsdesktop\\\",\\\"sku\\\":\\\"20h1-evd-o365pp\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"office-365\\\",\\\"publisher\\\":\\\"microsoftwindowsdesktop\\\",\\\"sku\\\":\\\"rs5-evd-o365pp\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"oracle-database-19-3\\\",\\\"publisher\\\":\\\"oracle\\\",\\\"sku\\\":\\\"oracle-db-19300\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-Linux\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":77,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-Linux\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":\\\"77-ci\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-Linux\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":78,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-Linux\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":8,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-Linux\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":\\\"8-ci\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-Linux\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":81,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-Linux\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":\\\"81-ci\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-Database-Ee\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":\\\"12.1.0.2\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-Database-Se\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":\\\"12.1.0.2\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-Database-Ee\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":\\\"12.2.0.1\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-Database-Se\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":\\\"12.2.0.1\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-Database-Ee\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":\\\"18.3.0.0\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-Database-Se\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":\\\"18.3.0.0\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-Linux\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":7.6,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Oracle-WebLogic-Server\\\",\\\"publisher\\\":\\\"Oracle\\\",\\\"sku\\\":\\\"Oracle-WebLogic-Server\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":7.6,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL-SAP\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":7.6,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL-SAP-HA\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":7.6,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL-HA\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":7.6,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":\\\"7-LVM\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":7.7,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL-SAP\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":7.7,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL-SAP-HA\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":7.7,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":7.8,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":\\\"7-LVM\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":8,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":8.1,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL-SAP-HA\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":8.1,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL-SAP-HA\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":8.2,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":\\\"8-LVM\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":8.2,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL-HA\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":8.1,\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL-HA\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":\\\"80-gen2\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL-SAP\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":\\\"76-ci\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":\\\"8-lvm-gen2\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":\\\"8-gen2\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":\\\"81-ci-gen2\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"RHEL\\\",\\\"publisher\\\":\\\"RedHat\\\",\\\"sku\\\":\\\"81gen2\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2014sp3-ws2012r2\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"enterprise\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2014sp3-ws2012r2\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"sqldev\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2014sp3-ws2012r2\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"standard\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2016SP2-WS2016\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"enterprisedbengineonly\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2016SP2-WS2016\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"standarddbengineonly\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2017-WS2016\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"enterprisedbengineonly\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2017-WS2016\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"standarddbengineonly\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2017-ws2019\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"enterprise\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2017-ws2019\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"enterprisedbengineonly\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2017-ws2019\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"sqldev\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2017-ws2019\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"standard\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2019-rhel7\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"enterprise\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2019-rhel7\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"standard\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2019-rhel8\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"enterprise\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2019-rhel8\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"sqldev\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2019-rhel8\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"standard\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2019-ws2019\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"enterprise\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2019-ws2019\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"enterprisedbengineonly\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2019-ws2019\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"sqldev\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2019-ws2019\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"standard\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"sql2019-ws2019\\\",\\\"publisher\\\":\\\"microsoftsqlserver\\\",\\\"sku\\\":\\\"standarddbengineonly\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2008R2SP3-WS2008R2SP1\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"Enterprise\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2008R2SP3-WS2008R2SP1\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"Standard\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2012SP4-WS2012R2\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"Enterprise\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2012SP4-WS2012R2\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"Standard\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2016SP1-WS2016\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"Enterprise\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2016SP1-WS2016\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"Standard\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2016SP2-WS2016\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"Enterprise\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2016SP2-WS2016\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"Standard\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2017-RHEL7\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"Enterprise\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2017-WS2016\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"Enterprise\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2017-RHEL7\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"Standard\\\",\\\"osType\\\":\\\"Linux\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"SQL2017-WS2016\\\",\\\"publisher\\\":\\\"MicrosoftSQLServer\\\",\\\"sku\\\":\\\"Standard\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"visualstudio2019latest\\\",\\\"publisher\\\":\\\"microsoftvisualstudio\\\",\\\"sku\\\":\\\"vs-2019-comm-latest-win10-n\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"visualstudio2019latest\\\",\\\"publisher\\\":\\\"microsoftvisualstudio\\\",\\\"sku\\\":\\\"vs-2019-comm-latest-ws2019\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"visualstudio2019latest\\\",\\\"publisher\\\":\\\"microsoftvisualstudio\\\",\\\"sku\\\":\\\"vs-2019-ent-latest-win10-n\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"visualstudio2019latest\\\",\\\"publisher\\\":\\\"microsoftvisualstudio\\\",\\\"sku\\\":\\\"vs-2019-ent-latest-ws2019\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"visualstudio2019\\\",\\\"publisher\\\":\\\"microsoftvisualstudio\\\",\\\"sku\\\":\\\"vs-2019-ent-win10-n\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"visualstudio2019\\\",\\\"publisher\\\":\\\"microsoftvisualstudio\\\",\\\"sku\\\":\\\"vs-2019-ent-ws2019\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Windows-10\\\",\\\"publisher\\\":\\\"MicrosoftWindowsDesktop\\\",\\\"sku\\\":\\\"20h1-ent\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Windows-10\\\",\\\"publisher\\\":\\\"MicrosoftWindowsDesktop\\\",\\\"sku\\\":\\\"20h1-entn\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Windows-10\\\",\\\"publisher\\\":\\\"MicrosoftWindowsDesktop\\\",\\\"sku\\\":\\\"20h1-evd\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Windows-10\\\",\\\"publisher\\\":\\\"MicrosoftWindowsDesktop\\\",\\\"sku\\\":\\\"rs1-enterprise\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Windows-10\\\",\\\"publisher\\\":\\\"MicrosoftWindowsDesktop\\\",\\\"sku\\\":\\\"rs1-enterprisen\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Windows-10\\\",\\\"publisher\\\":\\\"MicrosoftWindowsDesktop\\\",\\\"sku\\\":\\\"rs5-enterprise\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Windows-10\\\",\\\"publisher\\\":\\\"MicrosoftWindowsDesktop\\\",\\\"sku\\\":\\\"rs5-enterprise-standard\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Windows-10\\\",\\\"publisher\\\":\\\"MicrosoftWindowsDesktop\\\",\\\"sku\\\":\\\"rs5-enterprisen\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Windows-10\\\",\\\"publisher\\\":\\\"MicrosoftWindowsDesktop\\\",\\\"sku\\\":\\\"rs5-enterprisen-standard\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Windows-10\\\",\\\"publisher\\\":\\\"MicrosoftWindowsDesktop\\\",\\\"sku\\\":\\\"rs5-evd\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"Windows\\\",\\\"publisher\\\":\\\"microsoftvisualstudio\\\",\\\"sku\\\":\\\"Windows-10-N-x64\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"windowsserver-gen2preview\\\",\\\"publisher\\\":\\\"microsoftwindowsserver\\\",\\\"sku\\\":\\\"2012-datacenter-gen2\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"windowsserver-gen2preview\\\",\\\"publisher\\\":\\\"microsoftwindowsserver\\\",\\\"sku\\\":\\\"2012-r2-datacenter-gen2\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"windowsserver-gen2preview\\\",\\\"publisher\\\":\\\"microsoftwindowsserver\\\",\\\"sku\\\":\\\"2016-datacenter-gen2\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"windowsserver-gen2preview\\\",\\\"publisher\\\":\\\"microsoftwindowsserver\\\",\\\"sku\\\":\\\"2019-datacenter-gen2\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"WindowsServer\\\",\\\"publisher\\\":\\\"MicrosoftWindowsServer\\\",\\\"sku\\\":\\\"2012-Datacenter\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"WindowsServer\\\",\\\"publisher\\\":\\\"MicrosoftWindowsServer\\\",\\\"sku\\\":\\\"2016-Datacenter-with-Containers\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"WindowsServer\\\",\\\"publisher\\\":\\\"MicrosoftWindowsServer\\\",\\\"sku\\\":\\\"2019-Datacenter\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"WindowsServer\\\",\\\"publisher\\\":\\\"MicrosoftWindowsServer\\\",\\\"sku\\\":\\\"2019-Datacenter-with-Containers\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"windowsserverdotnet\\\",\\\"publisher\\\":\\\"microsoftwindowsserver\\\",\\\"sku\\\":\\\"ws2016-dotnetcore-2-1\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"windowsserverdotnet\\\",\\\"publisher\\\":\\\"microsoftwindowsserver\\\",\\\"sku\\\":\\\"ws2016-dotnetcore-2-2\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"windowsserverdotnet\\\",\\\"publisher\\\":\\\"microsoftwindowsserver\\\",\\\"sku\\\":\\\"ws2019-dotnetcore-2-1\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\",\"{\\\"offer\\\":\\\"windowsserverdotnet\\\",\\\"publisher\\\":\\\"microsoftwindowsserver\\\",\\\"sku\\\":\\\"ws2019-dotnetcore-2-2\\\",\\\"osType\\\":\\\"Windows\\\",\\\"version\\\":\\\"latest\\\"}\""
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+            "name": "[variables('managedIdentityName')]",
+            "apiVersion": "2018-11-30",
+            "location": "[resourceGroup().location]"
+        },
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "[variables('apiVersion').rbac]",
+            "name": "[guid(concat(resourceGroup().id, variables('managedIdentityName'), 'contributor'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('managedIdentityName'))]"
+            ],
+            "properties": {
+                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+                "principalId": "[reference(variables('managedIdentityName')).principalId]",
+                "scope": "[resourceGroup().id]",
+                "principalType": "ServicePrincipal"
+            }
+        },
+        {
+            "condition": "[parameters('CuratedMarketplace')]",
+            "apiVersion": "[variables('apiVersion').deployments]",
+            "type": "Microsoft.Resources/deployments",
+            "name": "[concat(variables('managedIdentityName'), '-rg-rbac')]",
+            "resourceGroup": "[parameters('vnetResourceGroupName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('managedIdentityName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {
+                        "managedIdentityName": "[concat(parameters('newLabName'),'-mi')]"                        
+                    },
+                    "resources": [
+                        {
+                            "apiVersion": "[variables('apiVersion').rbac]",
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "name": "[concat(guid(resourceGroup().id, variables('managedIdentityName'), 'RG Owner'))]",
+                            "properties": {
+                                // Network Contributor = 4d97b98b-1d4f-4787-a291-c67834d212e7
+                                // Owner = 8e3af657-a8ff-443c-a75c-2fe8c4bcb635
+                                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+                                "principalId": "[reference(variables('managedIdentityName')).principalId]",
+                                "scope": "/subscriptions/XXXXXXXXXXXXX/resourceGroups/rg-network-dev",
+                                "principalType": "ServicePrincipal"
+                            }
+                        }
+                    ],
+                    "outputs": {}
+                }
+            }
+        },
+        {
+            "apiVersion": "[variables('apiVersion').dtl]",
+            "type": "Microsoft.DevTestLab/labs",
+            "name": "[parameters('newLabName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('managedIdentityName'))]"
+            ],
+            "tags": {
+                "Application Name": "Infrastructure",
+                "Application Owner": "GouravIN",
+                "Billing Code": "10015",
+                "Business Function": "SharedService",
+                "Environment Type": "DEV"
+            },
+            "location": "[resourceGroup().location]",
+            "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('managedIdentityName'))]": {}
+                }
+            },
+            "properties": {
+                "labStorageType": "Premium",
+                "premiumDataDisks": "Enabled",
+                "environmentPermission": "Contributor",
+                "announcement": {
+                    "enabled": "Enabled",
+                    "expired": "False",
+                    "expirationDate": "[parameters('announcementExpiration')]",
+                    "markdown": "[parameters('announcementMarkdown')]",
+                    "title": "[parameters('announcementTitle')]"
+                },
+                "support": {
+                    "enabled": "Enabled",
+                    "markdown": "[parameters('supportMessageMarkdown')]"
+                }
+            },
+            "resources": [
+                {
+                    "apiVersion": "[variables('apiVersion').dtl]",
+                    "name": "LabVmsShutdown",
+                    "type": "schedules",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DevTestLab/labs', parameters('newLabName'))]"
+                    ],
+                    "properties": {
+                        "status": "enabled",
+                        "taskType": "LabVmsShutdownTask",
+                        "timeZoneId": "[string(parameters('timeZoneId'))]",
+                        "dailyRecurrence": {
+                            "time": "[string(parameters('labVmShutDownTime'))]"
+                        }
+                    }
+                },
+                {
+                    "apiVersion": "[variables('apiVersion').dtl]",
+                    "name": "[parameters('newLabVirtualNetworkName')]",
+                    "type": "virtualNetworks",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DevTestLab/labs', parameters('newLabName'))]"
+                    ],
+                    "properties": {
+                        "description": "Existing Compute virtual network associated as part of the lab creation process.",
+                        "externalProviderResourceId": "[parameters('existingVirtualNetworkId')]",
+                        "subnetOverrides": [
+                            {
+                                "name": "[parameters('existingSubnetName')]",
+                                "resourceId": "[variables('existingSubnetId')]",
+                                "useInVmCreationPermission": "Allow",
+                                "usePublicIpAddressPermission": "Deny"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "apiVersion": "[variables('apiVersion').dtl]",
+                    "name": "targetCost",
+                    "type": "costs",
+                    "properties": {
+                        "targetCost": {
+                            "cycleType": "CalendarMonth",
+                            "status": "Enabled",
+                            "target": "[parameters('costThreshold')]",
+                            "costThresholds": [
+                                {
+                                    "thresholdId": "96c08eae-885f-4a46-a15d-9dc991a32cbf",
+                                    "thresholdStatus": "Disabled",
+                                    "displayOnChart": "Enabled",
+                                    "sendNotificationWhenExceeded": "Disabled",
+                                    "percentageThreshold": { "thresholdValue": 75 }
+                                },
+                                {
+                                    "thresholdId": "5ef03748-2e10-4b3c-afc2-cc766abf2d5d",
+                                    "thresholdStatus": "Disabled",
+                                    "displayOnChart": "Enabled",
+                                    "sendNotificationWhenExceeded": "Enabled",
+                                    "percentageThreshold": { "thresholdValue": 100 }
+                                },
+                                {
+                                    "thresholdId": "b0bf180e-2e09-4073-8040-56e8a23dcd84",
+                                    "thresholdStatus": "Disabled",
+                                    "displayOnChart": "Disabled",
+                                    "sendNotificationWhenExceeded": "Disabled",
+                                    "percentageThreshold": { "thresholdValue": 125 }
+                                }
+                            ]
+                        }
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DevTestLab/labs', parameters('newLabName'))]"
+                    ]
+                },
+                {
+                    "apiVersion": "[variables('apiVersion').dtl]",
+                    "name": "Public Environment Repo",
+                    "type": "artifactSources",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DevTestLab/labs', parameters('newLabName'))]"
+                    ],
+                    "properties": {
+                        "status": "Enabled"
+                    }
+                },
+                {
+                    "apiVersion": "[variables('apiVersion').dtl]",
+                    "name": "default/AllowedVmSizesInLab",
+                    "type": "policySets/policies",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DevTestLab/labs', parameters('newLabName'))]"
+                    ],
+                    "properties": {
+                        "description": "",
+                        "factName": "LabVmSize",
+                        "threshold": "[concat('[', trim(parameters('allowedVmSizes')), ']')]",
+                        "evaluatorType": "AllowedValuesPolicy",
+                        "status": "enabled"
+                    }
+                },
+                {
+                    "condition": "[parameters('CuratedMarketplace')]",
+                    "apiVersion": "[variables('apiVersion').dtl]",
+                    "name": "default/GalleryImage",
+                    "type": "policySets/policies",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DevTestLab/labs', parameters('newLabName'))]"
+                    ],
+                    "properties": {
+                        "description": "",
+                        "factName": "GalleryImage",
+                        "evaluatorType": "AllowedValuesPolicy",
+                        "status": "Enabled",
+                        "threshold": "[concat('[', trim(variables('allowedImages')), ']')]"
+                    }
+                }
+            ]
+        },
+
+        {
+        "type": "Microsoft.Resources/deployments",
+        "dependsOn": [
+            "[resourceId('Microsoft.DevTestLab/labs', parameters('newLabName'))]"
+        ],        
+        "apiVersion": "[variables('apiVersion').deployments]",
+        "name": "dynamicSecret",
+        "properties": {
+            "mode": "Incremental",
+            "expressionEvaluationOptions": {
+            "scope": "inner"
+            },
+            "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+                "newLabName": {
+                    "type": "string"
+                },
+                "artifactRepoSecurityToken": {
+                    "type": "securestring"
+                },
+                "artifactRepositoryDisplayName": {
+                    "type": "string"
+                },
+                "artifactRepoUri": {
+                    "type": "string"
+                },
+                "artifactRepoBranch": {
+                    "type": "string"
+                },
+                "artifactRepoFolder": {
+                    "type": "string"
+                },
+                "artifactTemplateFolder": {
+                    "type": "string"
+                },
+                "artifactRepoType": {
+                    "type": "string",
+                    "allowedValues": [ "VsoGit", "GitHub" ]
+                },
+                "artifactRepositoryName": {
+                    "type": "string"
+                }                
+            },
+            "variables": {
+            },
+            "resources": [
+                {
+                "type": "Microsoft.DevTestLab/labs/artifactSources",
+                "apiVersion": "2018-09-15",
+                "name": "[concat(parameters('newLabName'), '/', parameters('artifactRepositoryName'))]",
+                "location": "[resourceGroup().location]",
+                "properties": {
+                    "uri": "[parameters('artifactRepoUri')]",
+                    "folderPath": "[parameters('artifactRepoFolder')]",
+                    "armTemplateFolderPath": "[parameters('artifactTemplateFolder')]",
+                    "branchRef": "[parameters('artifactRepoBranch')]",
+                    "displayName": "[parameters('artifactRepositoryDisplayName')]",
+                    "securityToken": "[parameters('artifactRepoSecurityToken')]",
+                    "sourceType": "[parameters('artifactRepoType')]",
+                    "status": "Enabled"
+                }
+                }
+            ],
+            "outputs": {
+            }
+            },
+            "parameters": {
+                "newLabName": {
+                    "value": "[parameters('newLabName')]"
+                },
+                "artifactRepoSecurityToken": {
+                    "reference": {
+                    "keyVault": {
+                        "id": "[resourceId(parameters('vaultResourceGroupName'), 'Microsoft.KeyVault/vaults', parameters('vaultName'))]"
+                    },
+                    "secretName": "AzureDevOpsReposCredential"
+                    }
+                },
+                "artifactRepositoryDisplayName": {
+                    "value": "[parameters('artifactRepositoryDisplayName')]"
+                },
+                "artifactRepoUri": {
+                    "value": "[parameters('artifactRepoUri')]"
+                },
+                "artifactRepoBranch": {
+                    "value": "[parameters('artifactRepoBranch')]"
+                },
+                "artifactRepoFolder": {
+                    "value": "[parameters('artifactRepoFolder')]"
+                },
+                "artifactTemplateFolder": {
+                    "value": "[parameters('artifactTemplateFolder')]"
+                },
+                "artifactRepoType": {
+                    "value": "[parameters('artifactRepoType')]"
+                },
+                "artifactRepositoryName": {
+                    "value": "[variables('artifactRepositoryName')]"
+                }
+            }
+        }
+        }
+    ],
+    "outputs": {
+        "labId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.DevTestLab/labs', parameters('newLabName'))]"
+        }
+    }
+}

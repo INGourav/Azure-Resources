@@ -1,0 +1,176 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+		"WebAppName": {
+			"type": "string",
+            "metadata": {
+                "description": "make sure this is a unique for the dns namespace <WebAppName>.azurewebsites.net"
+            }            
+		},
+		"DTLSubnetId": {
+			"type": "string",
+			"defaultValue": "$(LabSubnetId)"
+		},
+		"ExitingAppServicePlanResourceId": {
+			"type": "string",
+			"defaultValue": "",
+            "metadata": {
+                "description": "leave blank unless you know the resource id of an existing plan e.g. /subscriptions/XXXXXXXXXXXXXX/resourceGroups/XXXXXXXXXXXXXX/providers/Microsoft.Web/serverFarms/XXXXXXXXXXXXXX"
+            }
+		},
+		"VNETIntegrationExitingSubnetName": {
+			"type": "string",
+			"defaultValue": "",
+            "metadata": {
+                "description": "leave blank unless you know the name of an existing subnet for VNET Integration e.g. snet-dev-webapptest *Note: Must be unused unless sharing an existing plan"
+            }
+		}              
+    },
+    "variables": {
+        "resourceNamePrefix": "[take(uniqueString(resourceGroup().id), 3)]",
+        "hostingPlanName": "[toLower(concat(parameters('WebAppName'), '-', take(uniqueString(resourceGroup().id), 6), '-sp'))]",
+        "siteName": "[toLower(concat(parameters('WebAppName'), '-', take(uniqueString(resourceGroup().id), 6)))]",
+        "siteName2": "[toLower(concat(parameters('WebAppName'), '-', take(uniqueString(resourceGroup().id), 6)))]",
+        "subnetResourceId": "[concat('/subscriptions/XXXXXXXXXXXXXX/resourceGroups/XXXXXXXXXXXXXX/providers/Microsoft.Network/virtualNetworks/XXXXXXXXXXXXXX/subnets/', parameters('VNETIntegrationExitingSubnetName'))]"
+    },
+    "resources": [
+        {
+            "condition": "[empty(parameters('ExitingAppServicePlanResourceId'))]",
+            "name": "[variables('hostingPlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2020-06-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "name": "[variables('hostingPlanName')]",
+                "workerSize": "1",
+                "hostingEnvironment": "",
+                "numberOfWorkers": 0
+            },
+            "sku": {
+                "Tier": "PremiumV2",
+                "Name": "P1v2"
+            },
+            "kind": "app"
+        },
+        {
+            "condition": "[empty(parameters('ExitingAppServicePlanResourceId'))]",          
+            "name": "[variables('siteName')]",
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2020-06-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverfarms/', variables('hostingPlanName'))]"
+            ],
+            "kind": "app",            
+            "properties": {
+                "name": "[variables('siteName')]",
+                "serverFarmId": "[variables('hostingPlanName')]",
+                "hostingEnvironment": "",
+                "siteConfig": {
+                    "ftpsState": "AllAllowed"
+                }
+            },
+            "resources": [
+                {
+                    "condition": "[not(empty(parameters('VNETIntegrationExitingSubnetName')))]",                  
+                    "name": "virtualNetwork",
+                    "type": "config",
+                    "apiVersion": "2020-06-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('siteName'))]"
+                    ],
+                    "properties": {
+                        "subnetResourceId": "[variables('subnetResourceId')]",
+                        "swiftSupported": true
+                    }
+                }
+            ]
+        },
+        {
+            "condition": "[empty(parameters('ExitingAppServicePlanResourceId'))]",
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2020-05-01",
+            "name": "[concat('pl-',variables('siteName'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('siteName'))]"
+            ],
+            "properties": {
+                "subnet": {
+                    "id": "[parameters('DTLSubnetId')]"
+                },
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "[variables('siteName')]",
+                        "properties": {
+                            "privateLinkServiceId": "[resourceId('Microsoft.Web/sites', variables('siteName'))]",
+                            "groupIds": [
+                                "sites"
+                            ]
+                        }
+                    }
+                ]
+            } 
+        },
+        {
+            "condition": "[not(empty(parameters('ExitingAppServicePlanResourceId')))]",          
+            "name": "[variables('siteName2')]",            
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2020-06-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+            ],
+            "kind": "app",            
+            "properties": {
+                "name": "[variables('siteName2')]",
+                "serverFarmId": "[parameters('ExitingAppServicePlanResourceId')]",
+                "hostingEnvironment": "",
+                "siteConfig": {
+                    "ftpsState": "AllAllowed"
+                }
+            },
+            "resources": [
+                {
+                    "condition": "[not(empty(parameters('VNETIntegrationExitingSubnetName')))]",
+                    "name": "virtualNetwork",
+                    "type": "config",
+                    "apiVersion": "2020-06-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('siteName2'))]"
+                    ],
+                    "properties": {
+                        "subnetResourceId": "[variables('subnetResourceId')]",
+                        "swiftSupported": true
+                    }
+                }
+            ]
+        },
+        {
+            "condition": "[not(empty(parameters('ExitingAppServicePlanResourceId')))]",          
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2020-05-01",
+            "name": "[concat('pl-',variables('siteName2'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('siteName2'))]"
+            ],
+            "properties": {
+                "subnet": {
+                    "id": "[parameters('DTLSubnetId')]"
+                },
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "[variables('siteName2')]",
+                        "properties": {
+                            "privateLinkServiceId": "[resourceId('Microsoft.Web/sites', variables('siteName2'))]",
+                            "groupIds": [
+                                "sites"
+                            ]
+                        }
+                    }
+                ]
+            } 
+        }        
+    ]
+}
