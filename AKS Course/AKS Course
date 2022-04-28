@@ -1,0 +1,31 @@
+AKS Architecture
+
+Azure AKS cluster control Plane : -
+1) etcd - Key Value store for stroing all cluster data, it stores all the master and worker node information
+2) kube-scheduler - Distributing container to multiple nodes
+3) kube-apiserver - everything in kube talks using this
+4) AKS kube controller manager - controller are responsible when container goes down, there are many controller
+
+Azure AKS Node Pools : -
+1) kublet - kublet is the agent that runs on every container, this talks to kube-scheduler
+2) kube-proxy - It is a n/w proxy that maintans the n/w flow.
+
+
+Creation on AKS cluster in Azure
+
+Earlier, if we set resource identity to Service principal then we can't create container registry in Azure.
+Now this selection has been removed and system-assigned identity is only available, to use service principal we should create using Azure CLI.
+
+Networking,
+The kubenet networking plug-in creates a new VNet for your cluster using default values.
+The Azure CNI networking plug-in allows clusters to use a new or existing VNet with customizable addresses. Application pods are connected directly to the VNet, which allows for native integration with VNet features.
+
+
+Create credentials for AKS to access using CLI
+
+Login to az shell and run below command,
+az aks get-credentials --resource-group <rg name> --name <cluster name>
+
+Check info of AKS after credential,
+kubectl get nodes
+kubectl get nodes -o wide "This will give more info like IP, OS Image"
