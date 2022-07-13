@@ -1,7 +1,7 @@
 <#
 Script to install chocolatey on the windows system and install some apps that is needed for Azure
 Author : - Gourav Kumar
-Reach Me : - gouravxkumar@deloitte.co.uk
+Reach Me : - gouravin@outlook.com
 Version : - 1.0.1
 #>
 
