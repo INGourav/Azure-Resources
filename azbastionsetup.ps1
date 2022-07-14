@@ -22,11 +22,12 @@ begin {
     # Installation of Terraform on the machine
 
     Invoke-WebRequest 'https://releases.hashicorp.com/terraform/1.2.4/terraform_1.2.4_windows_amd64.zip' -OutFile C:\temp\terraform_1.2.4_windows_amd64.zip -Verbose
-    Start-Sleep -Seconds 14
+    Start-Sleep -Seconds 10
     Expand-Archive C:\temp\terraform_1.2.4_windows_amd64.zip C:\temp\terraform_1.2.4_windows_amd64 -Verbose -Force
-    Start-Sleep -Seconds 14
-    [System.Environment]::SetEnvironmentVariable('Path', 'C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files (x86)\dotnet\;C:\ProgramData\chocolatey\bin;C:\Program Files\Microsoft VS Code\bin;C:\Program Files\Git\cmd;C:\Users\tfvmtestrg\AppData\Local\Microsoft\WindowsApps;C:\temp\terraform_1.2.4_windows_amd64')
-
+    Start-Sleep -Seconds 10
+    $path = (Get-Item -Path Env:\Path).Value
+    $newpath = $path + 'C:\Temp\terraform_1.2.4_windows_amd64'
+    Set-Item -Path Env:\Path -Value $newpath
 }
 
 end{}
