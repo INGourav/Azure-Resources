@@ -29,8 +29,6 @@ Version : - 1.0.1
     Start-Sleep -Seconds 5;
     choco install drawio -y --force;
     Start-Sleep -Seconds 5;
-    
-    Start-Sleep -Seconds 23;
 
    # setting env vars
    
