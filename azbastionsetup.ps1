@@ -5,9 +5,6 @@ Reach Me : - gouravin@outlook.com
 Version : - 1.0.1
 #>
 
-begin {
-    # Installation of choco
-
     Set-ExecutionPolicy Bypass -Scope Process -Force;
     
     # Installation of Terraform on the machine
@@ -31,6 +28,10 @@ begin {
     Start-Sleep -Seconds 5;
     choco install drawio -y --force;
     Start-Sleep -Seconds 5;
+    
+    Restart-Computer -Force
+    
+    Start-Sleep -Seconds 23;
 
    # setting env vars
    
@@ -40,6 +41,3 @@ begin {
     Start-Sleep -Seconds 5;
     Set-Item -Path Env:\Path -Value $newpath
 
-}
-
-end{}
