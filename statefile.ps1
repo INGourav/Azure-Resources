@@ -10,15 +10,16 @@ How to run  : - save the script and navigate to the same location/directory and 
 Here in 'C:\Statefilereading\terraform.tfstate'  , C:\Statefilereading\ is the location where statefile exist and terraform.tfstate is the state file name
 #>
 
+
 Param(
-    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the Resource Name")]
+    [parameter (Mandatory = $True, ValueFromPipeLine = $True, HelpMessage = "Provide the Statefile location")]
     [Alias('Terraform state file location file')]
     [ValidateNotNullOrEmpty()]
     [string]$location
 
 )
 
-$statefile = (Get-Content -Raw -Path .\aws_terraform.tfstate | ConvertFrom-json).resources
+$statefile = (Get-Content -Raw -Path $location | ConvertFrom-json).resources
 $provider = $statefile.provider
 
 if ($provider -eq 'provider["registry.terraform.io/hashicorp/azurerm"]') {
@@ -34,9 +35,9 @@ foreach($resource in $statefile)
 
     # $fileinfo | Add-Member -MemberType NoteProperty -Name "TFRefName" -Value $resource.name
     # $fileinfo | Add-Member -MemberType NoteProperty -Name "ResourcesDsependencies" -Value ($resource.instances.dependencies -join ' , ')
-    # $fileinfo | fl
+    $fileinfo | fl
 
-    $fileinfo | Export-Csv C:\Temp\AzureStatefileinfo.csv -Append -NoTypeInformation
+    # $fileinfo | Export-Csv C:\Temp\AzureStatefileinfo.csv -Append -NoTypeInformation
 
   }
 } if ($provider -eq 'provider["registry.terraform.io/hashicorp/aws"]') {
@@ -47,9 +48,10 @@ foreach($resource in $statefile)
     $fileinfo | Add-Member -MemberType NoteProperty -Name "Resource Mode" -Value $resource.mode
     $fileinfo | Add-Member -MemberType NoteProperty -Name "Resource Type" -Value $resource.type
     $fileinfo | Add-Member -MemberType NoteProperty -Name "Resource Name" -Value $resource.instances.attributes.name
+    $fileinfo | Add-Member -MemberType NoteProperty -Name "ARN" -Value $resource.instances.attributes.arn
     $fileinfo | fl
 
-    $fileinfo | Export-Csv C:\Temp\AWSStatefileinfo.csv -Append -NoTypeInformation
+    # $fileinfo | Export-Csv C:\Temp\AWSStatefileinfo.csv -Append -NoTypeInformation
 
   }
 }
