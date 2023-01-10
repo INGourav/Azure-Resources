@@ -1,9 +1,10 @@
 # Enable the service endpoint for an existing subnet of a virtual network
-$resourceGroupName = "<Resource group name>"
-$vnetName = "<Virtual network name>"
-$subnetName = "<Subnet name>"
-$subnetPrefix = "<Subnet address range>"
-$serviceEndpoint = "Microsoft.AzureCosmosDB"
+$resourceGroupName = "Resource group name"
+$vnetName = "Virtual network name"
+$subnetName = "Subnet name"
+$subnetPrefix = "Subnet address range"
+$accountName = "Azure Cosmos DB account name"
+$serviceEndpoint = "Microsoft.AzureCosmosDB" # No need to change for cosmosDB
 
 Get-AzVirtualNetwork `
    -ResourceGroupName $resourceGroupName `
@@ -25,7 +26,6 @@ $vnetRule = New-AzCosmosDBVirtualNetworkRule `
    -IgnoreMissingVNetServiceEndpoint 0  # 1 will ignore missing vnet service point and 0 will not
 
 # Getting Azure Cosmos DB account information
-$accountName = "<Azure Cosmos DB account name>"
 $oldvnetrule = $account.VirtualNetworkRules
 
 # Adding older rules if there are any else it will vanish older ones and add new ones only
@@ -36,7 +36,7 @@ Update-AzCosmosDBAccount `
    -ResourceGroupName $resourceGroupName `
    -Name $accountName `
    -EnableVirtualNetwork $true `
-   -VirtualNetworkRuleObject @($vnetRule)
+   -VirtualNetworkRuleObject $oldvnetrule
 
 # Run the following command to verify
 $account = Get-AzCosmosDBAccount `
