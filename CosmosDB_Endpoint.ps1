@@ -36,7 +36,7 @@ Update-AzCosmosDBAccount `
    -ResourceGroupName $resourceGroupName `
    -Name $accountName `
    -EnableVirtualNetwork $true `
-   -VirtualNetworkRuleObject $oldvnetrule
+   -VirtualNetworkRuleObject $oldvnetrule # -VirtualNetworkRuleObject @($vnetRule) for array with , 
 
 # Run the following command to verify
 $account = Get-AzCosmosDBAccount `
