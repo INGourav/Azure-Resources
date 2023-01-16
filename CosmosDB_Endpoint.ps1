@@ -13,7 +13,7 @@ example 2 (when we want to enable endpoint on subnet and this is in same subscri
 .\CosmosDB_Endpoint.ps1 -vnetresourcegroupName 'VNETGR01' -vnetname 'Vnet01' -subnetName 'Subnet01', 'subnet02' -cosmosresourcegroupName 'cosmosrg1' -cosmosdbaccount 'cosmos1'
 #>
 
-
+[CmdletBinding()]
 Param(
    [parameter (Mandatory=$False, Position=0, ValueFromPipeLine=$True, HelpMessage="Provide the different subscription ID where the subnet exists, only if you want to enable subnet from different subscription that is under the same AD tenant")]
    [Alias('subscriptio ID')]
@@ -73,9 +73,9 @@ if($null -eq $subscriptionid)
                 -Id $subnetId `
                 -IgnoreMissingVNetServiceEndpoint 0
                 $rules    += $vnetRule
-            }       
+            }
         }
-      }     
+      }
     }
    else {
         foreach($snet in $subnetName)
@@ -87,13 +87,12 @@ if($null -eq $subscriptionid)
           $rules    += $vnetRule
         }
    }
-}
-else {
+}else {
     foreach($snet in $subnetName)
       {
         $subnetId = "/subscriptions/"+$subscriptionID+"/resourceGroups/"+$vnetresourceGroupName+"/providers/Microsoft.Network/virtualNetworks/"+$vnetName+"/subnets/"+$snet
         $vnetRule = New-AzCosmosDBVirtualNetworkRule `
-        -Id $subnetId ` 
+        -Id $subnetId `
         -IgnoreMissingVNetServiceEndpoint 1
         $rules    += $vnetRule
       }
@@ -110,7 +109,7 @@ foreach ($account in $cosmosdbaccount) {
    # Update Azure Cosmos DB account properties with the new Virtual Network endpoint configuration
    Update-AzCosmosDBAccount `
    -ResourceGroupName $cosmosresourceGroupName `
-   -Name $accountname `
+   -Name $account `
    -EnableVirtualNetwork $true `
    -VirtualNetworkRuleObject @($finalrules)
 }
