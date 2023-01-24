@@ -11,6 +11,9 @@ How to run, example 1 (when we want to whitlist subnet from different subscripti
 
 example 2 (when we want to enable endpoint on subnet and this is in same subscription)
 .\CosmosDB_Endpoint.ps1 -vnetresourcegroupName 'VNETGR01' -vnetname 'Vnet01' -subnetName 'Subnet01', 'subnet02' -cosmosresourcegroupName 'cosmosrg1' -cosmosdbaccount 'cosmos1'
+
+Important: User/Service Principal should have Network Contributor roles assigned
+https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-configure-vnet-service-endpoint?toc=%2Fazure%2Fvirtual-network%2Ftoc.json#are-extra-azure-role-based-access-control-permissions-needed-for-azure-cosmos-db-accounts-with-vnet-service-endpoints
 #>
 
 [CmdletBinding()]
