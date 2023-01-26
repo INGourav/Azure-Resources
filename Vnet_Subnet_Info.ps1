@@ -31,7 +31,7 @@ $subscriptions = Get-AzSubscription | select -ExpandProperty SubscriptionId
 foreach ($subscription in $subscriptions) {
     Set-Azcontext -SubscriptionId $subscription
     $ErrorActionPreference = "SilentlyContinue"
-   $vnets = Get-AzVirtualNetwork -ResourceGroupName Support-Builds -Name az_hyperscaler
+   $vnets = Get-AzVirtualNetwork
   foreach ($vnet in $vnets) {
     $peerings = $vnet.VirtualNetworkPeerings
     foreach ($peering in $peerings) {
