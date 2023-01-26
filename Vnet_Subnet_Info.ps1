@@ -27,10 +27,8 @@ foreach ($subscription in $subscriptions) {
 
 $ErrorActionPreference = "SilentlyContinue"
 $subscriptions = Get-AzSubscription | select -ExpandProperty SubscriptionId
-
 foreach ($subscription in $subscriptions) {
     Set-Azcontext -SubscriptionId $subscription
-    $ErrorActionPreference = "SilentlyContinue"
    $vnets = Get-AzVirtualNetwork
   foreach ($vnet in $vnets) {
     $peerings = $vnet.VirtualNetworkPeerings
