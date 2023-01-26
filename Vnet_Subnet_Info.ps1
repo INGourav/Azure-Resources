@@ -27,10 +27,19 @@ foreach ($subscription in $subscriptions) {
 
 $ErrorActionPreference = "SilentlyContinue"
 $subscriptions = Get-AzSubscription | select -ExpandProperty SubscriptionId
+
 foreach ($subscription in $subscriptions) {
     Set-Azcontext -SubscriptionId $subscription
-    $vnets = Get-AzVirtualNetwork
- foreach ($vnet in $vnets) {
+    $ErrorActionPreference = "SilentlyContinue"
+   $vnets = Get-AzVirtualNetwork -ResourceGroupName Support-Builds -Name az_hyperscaler
+  foreach ($vnet in $vnets) {
+    $peerings = $vnet.VirtualNetworkPeerings
+    foreach ($peering in $peerings) {
+        $PeeringName     = $peering.Name
+        $PeeringState    = $peering.PeeringState
+        $PeerVNetName    = $peering.RemoteVirtualNetwork.Id.Split("/")[-1]
+        $PeerVNetAddress = $peering.RemoteVirtualNetworkAddressSpace.AddressPrefixes
+    }
     $subnets = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnet
     foreach ($subnet in $subnets) {
         $snet = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnet -Name $subnet.Name
@@ -44,7 +53,6 @@ foreach ($subscription in $subscriptions) {
         $subnetroute = $subnetrouteid.Split("/")[-1]
         $subnetendpoint = $subnet.ServiceEndpoints.Service
         $subnetendpointlocation = $subnet.ServiceEndpoints.Locations
-
         $subnetconfig = New-Object psobject
         $subnetconfig | Add-Member -MemberType NoteProperty -name "Subscription ID" -Value $subscription
         $subnetconfig | Add-Member -MemberType NoteProperty -name "VNet Name" -Value $vnetname
@@ -55,6 +63,10 @@ foreach ($subscription in $subscriptions) {
         $subnetconfig | Add-Member -MemberType NoteProperty -name "Subnet Route" -Value $subnetroute
         $subnetconfig | Add-Member -MemberType NoteProperty -name "Subnet Endpoint" -Value $subnetendpoint
         $subnetconfig | Add-Member -MemberType NoteProperty -name "Subnet Endpoint Location" -Value $subnetendpointlocation
+        $subnetconfig | Add-Member -MemberType NoteProperty -name "Peering Name" -Value $PeeringName
+        $subnetconfig | Add-Member -MemberType NoteProperty -name "Peer VNetName" -Value $PeerVNetName
+        $subnetconfig | Add-Member -MemberType NoteProperty -name "Peering State" -Value $PeeringState
+        $subnetconfig | Add-Member -MemberType NoteProperty -name "Peer VNetAddress" -Value $PeerVNetAddress
         $subnetconfig
         $subnetnsg = $null; $subnetroute = $null; $subnetendpoint = $null; $subnetendpointlocation = $null
     }
