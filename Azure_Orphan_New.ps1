@@ -1,4 +1,4 @@
-$subs = Get-Azsubscription | Select-Object-Object -ExpandProperty Name
+$subs = Get-Azsubscription | Select-Object -ExpandProperty Name
 foreach ($sub in $subs) {
     Set-Azcontext -subscription $sub
     Get-AzNetworkInterface | Where-Object { $_.VirtualMachine -eq $null } | Select-Object @{N = 'Subscriotion'; E = { $sub } }, ResourceGroupName, Name, Location, ProvisioningState | Export-csv C:\Temp\Or_res_0811\orphannic.csv -append -notypeinformation
@@ -9,7 +9,7 @@ foreach ($sub in $subs) {
 #############################################################
 
 
-$subs = Get-Azsubscription | Select-Object-Object -ExpandProperty Name
+$subs = Get-Azsubscription | Select-Object -ExpandProperty Name
 foreach ($sub in $subs) {
     Set-Azcontext -subscription $sub
     Get-AzPublicIpAddress | Where-Object { $_.IpAddress -eq 'Not Assigned' } | Select-Object @{N = 'Subscriotion'; E = { $sub } }, ResourceGroupName, Name, Location, ProvisioningState | Export-csv C:\Temp\Or_res_0811\orphanpip.csv -append -notypeinformation
@@ -20,7 +20,7 @@ foreach ($sub in $subs) {
 #############################################################-
 
 
-$subs = Get-Azsubscription | Select-Object-Object -ExpandProperty Name
+$subs = Get-Azsubscription | Select-Object -ExpandProperty Name
 foreach ($sub in $subs) {
     Set-Azcontext -subscription $sub
     Get-AzDisk | Where-Object { $_.ManagedBy -eq $null } | Select-Object @{N = 'Subscriotion'; E = { $sub } }, ResourceGroupName, Name, Location, ProvisioningState | Export-csv C:\Temp\Or_res_0811\orphanunmanageddisk.csv -append -notypeinformation
