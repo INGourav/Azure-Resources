@@ -26,8 +26,11 @@ foreach ($subscription in $subscriptions) {
 ############################### Script to print value of console #################################
 
 $ErrorActionPreference = "SilentlyContinue"
-$vnets = Get-AzVirtualNetwork
-foreach ($vnet in $vnets) {
+$subscriptions = Get-AzSubscription | select -ExpandProperty SubscriptionId
+foreach ($subscription in $subscriptions) {
+    Set-Azcontext -SubscriptionId $subscription
+    $vnets = Get-AzVirtualNetwork
+ foreach ($vnet in $vnets) {
     $subnets = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnet
     foreach ($subnet in $subnets) {
         $snet = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnet -Name $subnet.Name
@@ -43,6 +46,7 @@ foreach ($vnet in $vnets) {
         $subnetendpointlocation = $subnet.ServiceEndpoints.Locations
 
         $subnetconfig = New-Object psobject
+        $subnetconfig | Add-Member -MemberType NoteProperty -name "Subscription ID" -Value $subscription
         $subnetconfig | Add-Member -MemberType NoteProperty -name "VNet Name" -Value $vnetname
         $subnetconfig | Add-Member -MemberType NoteProperty -name "VNet Range" -Value  $vnetrange
         $subnetconfig | Add-Member -MemberType NoteProperty -name "Subnet Name" -Value $subnetName
@@ -54,4 +58,5 @@ foreach ($vnet in $vnets) {
         $subnetconfig
         $subnetnsg = $null; $subnetroute = $null; $subnetendpoint = $null; $subnetendpointlocation = $null
     }
+  }
 }
