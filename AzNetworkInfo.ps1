@@ -1,6 +1,6 @@
 <#
 About the script: This script can export informational spreadsheet about the Virtual Network for subscriptions.
-Version : 2.0.0
+Version : 2.0.1
 Author : Gourav Kumar
 Reach me : https://github.com/INGourav  , https://www.linkedin.com/in/gouravrathore/
 How to Run
@@ -32,7 +32,9 @@ if (" " -eq $sub) {
     foreach ($vnet in $vnets) {
         Write-Host "Collecting Virtual Network information of" $vnet.Name
         $subnets = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnet
-        $PeerVnet = $vnet | Select-Object @{n = "VnetName"; e = { foreach($id in $vnet.VirtualNetworkPeerings.RemoteVirtualNetwork.Id){$n += @($id.Split("/")[-1] -join ': ')} ; (-split $n) -join "; " } }
+        $PeerVnet = $vnet `
+        | Select-Object @{n = "VnetName"; e = { foreach($id in $vnet.VirtualNetworkPeerings.RemoteVirtualNetwork.Id){$n += @($id.Split("/")[-1] -join ': ')} ; `
+        (-split $n) -join "; " } }
         foreach ($subnet in $subnets) {
             Write-Host "Collecting information of" $subnet.Name "Subnet from parent VNet" $vnet.Name
             $ErrorActionPreference = "SilentlyContinue"
