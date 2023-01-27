@@ -1,5 +1,5 @@
 <#
-About the script: This script can export informational spreadsheet about the Virtual Network those are under same AD tenant in different subscriptions.
+About the script: This script can export informational spreadsheet about the Virtual Network for subscriptions.
 Version : 2.0.0
 Author : Gourav Kumar
 Reach me : https://github.com/INGourav  , https://www.linkedin.com/in/gouravrathore/
