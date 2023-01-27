@@ -12,7 +12,7 @@ Feel free to fork, use, and send feedback :)
 [CmdletBinding()]
 Param(
    [parameter (Mandatory=$False, Position=0, ValueFromPipeLine=$True, HelpMessage="Provide the subscription ID")]
-   [Alias('subscriptio ID')]
+   [Alias('subscription ID')]
    [ValidateNotNullOrEmpty()]
    [string]$sub = " "
 )
