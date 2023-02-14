@@ -27,7 +27,7 @@ resource "azurerm_network_security_group" "nsg" {
     ignore_changes = [tags]
   }
   security_rule {
-    name                       = "Allow_LOCAL_SUBNET_INBOUND"
+    name                       = "allow_local_subnet_inbound"
     priority                   = 125
     direction                  = "Inbound"
     access                     = "Allow"
@@ -39,7 +39,7 @@ resource "azurerm_network_security_group" "nsg" {
   }
 
   security_rule {
-    name                       = "Allow_AZURE_LB_INBOUND"
+    name                       = "allow_azure_loadBalancer_inbound"
     priority                   = 126
     direction                  = "Inbound"
     access                     = "Allow"
