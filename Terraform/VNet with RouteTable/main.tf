@@ -1,12 +1,12 @@
 resource "azurerm_resource_group" "networkrg" {
-  name     = var.resource-group-name
+  name     = var.resourcegroupname
   location = var.location
 }
 
 resource "azurerm_virtual_network" "vnet" {
   name                = var.vnetname
-  location            = var.location
-  resource_group_name = var.rgname
+  location            = azurerm_resource_group.networkrg.location
+  resource_group_name = azurerm_resource_group.networkrg.name
   address_space       = var.cidr
 }
 
@@ -27,14 +27,26 @@ resource "azurerm_network_security_group" "nsg" {
     ignore_changes = [tags]
   }
   security_rule {
-    name                       = "test001"
-    priority                   = 100
+    name                       = "Allow_LOCAL_SUBNET_INBOUND"
+    priority                   = 125
     direction                  = "Inbound"
     access                     = "Allow"
-    protocol                   = "Tcp"
+    protocol                   = "*"
     source_port_range          = "*"
     destination_port_range     = "*"
     source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Allow_AZURE_LB_INBOUND"
+    priority                   = 126
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "*"
+    source_port_range          = "*"
+    destination_port_range     = "*"
+    source_address_prefix      = "AzureLoadBalancer"
     destination_address_prefix = "*"
   }
 }
@@ -52,9 +64,9 @@ resource "azurerm_route_table" "rt" {
   disable_bgp_route_propagation = false
 
   route {
-    name           = "route1"
-    address_prefix = "10.1.0.0/16"
-    next_hop_type  = "VnetLocal"
+    name           = var.routename
+    address_prefix = var.routeaddressprefix
+    next_hop_type  = var.nexthop
   }
 
   tags = {
