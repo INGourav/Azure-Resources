@@ -4,7 +4,7 @@ $triggerName       = "TriggerName"
 $currentTime       = Get-Date
 
 $recurrence   = (Get-AzDataFactoryV2Trigger -ResourceGroupName $resourceGroupName -DataFactoryName $dataFactoryName -Name $triggerName).Properties.Recurrence
-$RuntimeState = (Get-AzDataFactoryV2Trigger -ResourceGroupName $resourceGroupName -DataFactoryName $dataFactoryName -Name $triggerName).RuntimeState
+$runtimestate = (Get-AzDataFactoryV2Trigger -ResourceGroupName $resourceGroupName -DataFactoryName $dataFactoryName -Name $triggerName).runtimestate
 
 $startTime = $recurrence.StartTime
 $interval  = $recurrence.Interval
@@ -21,7 +21,7 @@ if($frequency -eq "Hour")
    
     if(($previousTime.Hour -eq $startTimeHour) -and ($previousTime.Minute -ge $startTimeMinute))
     {
-        if($RuntimeState -eq "Stopped")
+        if($runtimestate -eq "Stopped")
         {
           # Write your action
           Write-host "Running hour block"
@@ -34,7 +34,7 @@ if($frequency -eq "Hour")
    
     if(($previousTime.Day -eq $startTimeDate.Day) -and ($previousTime.Hour -eq $startTimeHour) -and ($previousTime.Minute -ge $startTimeMinute))
     {
-      if($RuntimeState -eq "Stopped")
+      if($runtimestate -eq "Stopped")
       {
         # Write your action
         Write-host "Running Day block"
@@ -47,7 +47,7 @@ if($frequency -eq "Hour")
    
     if(($previousTime.DayOfWeek -eq $startTimeDate.DayOfWeek) -and ($previousTime.Hour -eq $startTimeHour) -and ($previousTime.Minute -ge $startTimeMinute))
     {
-      if($RuntimeState -eq "Stopped")
+      if($runtimestate -eq "Stopped")
       {
         # Write your action
         Write-host "Running week block"
@@ -60,7 +60,7 @@ if($frequency -eq "Hour")
    
     if(($previousTime.Day -eq $startTimeDate.Day) -and ($previousTime.Hour -eq $startTimeHour) -and ($previousTime.Minute -ge $startTimeMinute))
     {
-      if($RuntimeState -eq "Stopped")
+      if($runtimestate -eq "Stopped")
       {
         # Write your action
         Write-host "Running Month block"
