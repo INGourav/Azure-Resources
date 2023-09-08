@@ -1,6 +1,12 @@
-$SubscriptionId = "XXXXXXXXXXXXXXXXXXXXXXXXX"
+[CmdletBinding()]
+param (
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [string]$SubscriptionId
+)
+
 $path = (Get-Location).Path
-$reportname = "test.csv"
+$reportname = "VMInfo.csv"
 
 Connect-AzAccount
 
@@ -26,6 +32,8 @@ foreach ($vm in $vms) {
     $vminfo | Add-Member -MemberType NoteProperty -name "Os Disk AV Zone" -Value (((Get-AzDisk -ResourceGroupName $vm.ResourceGroupName  -DiskName $vm.StorageProfile.OsDisk.Name).Zones) -join ';')
     $vminfo | Add-Member -MemberType NoteProperty -name "Boot Diagnostic Enabled" -Value $vm.DiagnosticsProfile.BootDiagnostics.Enabled
     $vminfo | Add-Member -MemberType NoteProperty -name "Boot Diagnostic Storage" -Value ($vm.DiagnosticsProfile.BootDiagnostics.StorageUri.Split("/")).split(".")[2]
+    $vei = $vm.Extensions.id ;$ext=foreach($ve in $vei){$ve.Split("/")[-1]}; $e = $ext -join ' ; ';
+    $vminfo | Add-Member -MemberType NoteProperty -name "Extension Installed" -Value $e
     $vminfo | Add-Member -MemberType NoteProperty -name "Network Interface" -Value $vm.NetworkProfile.NetworkInterfaces.Id.Split("/")[-1]
     $vminfo | Add-Member -MemberType NoteProperty -name "VNET Name" -Value (Get-AzNetworkInterface -Name $vm.NetworkProfile.NetworkInterfaces.Id.Split("/")[-1]).IpConfigurations.Subnet.Id.Split("/")[-3]
     $vminfo | Add-Member -MemberType NoteProperty -name "Subnet Name" -Value (Get-AzNetworkInterface -Name $vm.NetworkProfile.NetworkInterfaces.Id.Split("/")[-1]).IpConfigurations.Subnet.Id.Split("/")[-1]
@@ -33,9 +41,7 @@ foreach ($vm in $vms) {
     $i = ((Get-AzNetworkInterface -Name $vm.NetworkProfile.NetworkInterfaces.Id.Split("/")[-1]).IpConfigurations.PublicIpAddress.id).split("/")[-1]
     $pip = (Get-AzPublicIpAddress -Name $i).IpAddress
     $vminfo | Add-Member -MemberType NoteProperty -name "Public IP" -Value $pip
-    $i = $null; $pip = $null
-    
-
+        
     if ($vm.StorageProfile.DataDisks.count -gt 0) {
         $disks = $vm.StorageProfile.DataDisks
         foreach ($disk in $disks) {
@@ -55,5 +61,6 @@ foreach ($vm in $vms) {
         }
     }
     $vminfo
-    $vminfo | Export-CSV "$path$reportname" -Append -NoTypeInformation
+    $vminfo | Export-CSV "$path$reportname" -Append -NoTypeInformation -Force
+    $vm = $i = $pip = $vei = $ext = $e = $null;
 }
