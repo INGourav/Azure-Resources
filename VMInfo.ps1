@@ -5,11 +5,10 @@ param (
     [string]$SubscriptionId
 )
 
-
 $path = (Get-Location).Path
-$reportname = "testnew.csv"
-
-Connect-AzAccount
+$date = ((Get-Date).ToString().Split(" ")[0]).Split("/") -join "_"
+$filename = "/VMInfoFile_"
+$exportpath = $path+$filename+$date+".csv"
 
 Select-AzSubscription $subscriptionId
 
@@ -70,8 +69,8 @@ foreach ($vm in $vms) {
             }
         }
     }
-    
+
     $vminfo
-    $vminfo | Export-CSV "$path$reportname" -Append -NoTypeInformation -Force
+    $vminfo | Export-CSV $exportpath -Append -NoTypeInformation -Force
     $vm = $i = $pip = $vei = $ext = $e = $null;
 }
