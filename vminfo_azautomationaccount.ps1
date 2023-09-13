@@ -20,7 +20,7 @@ Add-AzStorageAccountNetworkRule -ResourceGroupName $StorageAccountResourceGroupN
 
 Start-Sleep -s $sleepDuration;
 
-$vms = Get-AzVM | Select-Object * | Select-Object -First 1
+$vms = Get-AzVM | Select-Object *
 foreach ($vm in $vms) {
     $vminfo = New-object psobject
     $vminfo | Add-Member -MemberType NoteProperty -name "Subscription ID" -Value $SubscriptionId
